@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "aave-speech-rec",
+  "private_key_id": "4bcd7fc702046ebb401dcd0bc0b8dc6aec2f59e8",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/9d/sIQaaM2/0\n9dlnzf+wioF8HTbVWFd5QC9D0JfmHaQLMWFZUxKTkOIMXwcdmDmP45cT9F3TGH3C\n4K5u6t2QFtjQ6W8hXL7JJF6zqRxQwPPtS2reydBM/HjzDAXPeB6SsZizzU7y1/IS\nAEKaExjlWyDG1Romb7kJFbQzRIFw95jFLBGddh6rGzcmkZ2RgkVry1Q4kf7eLOi8\nhqHym7IPSU7bEHtiJHXWTcismVu64fEVMK4DOcF3fFLst5gq1v11oGk9xpHDVpG8\nkZphjD865xwrMozDs+35R+lGUJFRwZKVTnLGBEVPb/THNVIEkRI7XBRGd/EvKFo5\nn1omtyX9AgMBAAECggEAE5Yj7fUEtnEvKEB5mWTkhP/s7FwSvzwPWNjaucGr7hfy\nKA42z6VxTMtItVhw4m0o2myveqLBfAuQsXS5d6nRR6V9I/vdkfrjoKRsYUqNEBRQ\nD1NVqTvQXDqaoLoGUcAA5pjmato1BwRPt9R89zmhna1pr8AItglKSQoE5AJGbt83\nVDHacopZuSoslPQX/2qyTvDmk21dZxeBYKwzEw82FRdjY9QQSfhtVADHdwCc0+w1\nJXunPAD4Tt3MNG/wQMUUQSVf5Kuq7RA9eaNHN7z7w5KQu4bSLh1KwQB8pNhCSMoG\n1NPNGAzxqM1yIyvoIardz9l1ignM9+cr9vsHe+y7JQKBgQDpSTiVoR0UQ5zwnUj4\nP1GR2zXRwd9geLuOG/ItmO5voYyol9UZmRsp7ZbaEb3WAn+Uggy3fFOQBwntn4z3\nsLIG/yivd95AG/u7Qe6HjdIMU2RWlMPDGKuGVHKtxGS2lBqljostIIDWZisXlyxp\nm1AZMxLxw1erXzJ6UTxbwq38awKBgQDSppd3EgYb6xOgzaG7lRUvsWJ/HtcIWMZJ\nWs5FmLfllInAq3W4nEF8ISPUd0BKUoypdZfvCVxSwH449eAQH0kZ54hDNUpNG7rB\nRln/EoEPn8sxKPW1iJke2y+YLbOwITcADwvIlLSjaEAeg3PIdgCP4RLB+ytWGBSo\nz/ZT/myBNwKBgQDPj4w+5ViAHSBXnTm9Vmj3AzlBZeOfbAxEBm1VUIpk3DHQFzdN\nTUIz7eaYI8zpytNEiOlTn9ShgwG8YIcGIjpjq0bByD8Af2VcWO8nwHEw8kmGF1qO\nDTcfj6dxIBoTsHZ88vS1tAOtvr18gc7ML5n2sdCbNpicK1k4J2syoWY3/QKBgGxY\nWxdXIeVCJ7pRiZodt+Pr7KlNh3Q3lOUt22JYhl2C5MdAaTAmzle2A+PH4j1X8BlI\n7nh37BB0CXfqnvAr50F3oNJQmoLGfGvkb22OautKWQxT8O0J8Re5zOUMvJseuldB\nZeIo+jAB8ti+69JzPx7BuRAky8lgYV/iduQEvHJJAoGASQyNl6CF0Wdj4a6Fa5Yd\nQdLcqtmv4KkqrHfTR3A5gP9vsdeL/9HHAL0c1877C6LoL/hJk99cdop1/uMzXGfP\nNY8BT7k6PbanbzgsNh/FDPZpp7OxR7kobv7/nAmXTZ++TW9GiktV8XoH0j+dYw3+\nD1ep3jvmHFNIz/W9bNSsa8k=\n-----END PRIVATE KEY-----\n",
+  "client_email": "claire@aave-speech-rec.iam.gserviceaccount.com",
+  "client_id": "114935433826062241651",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/claire%40aave-speech-rec.iam.gserviceaccount.com"
+}
