@@ -1,0 +1,160 @@
+import pandas as pd
+import numpy as np
+import os
+from os import path
+import re
+import csv
+from text_cleaning_utils import *
+
+MANIFEST_FILE = "manifest.csv"
+OUTFILE = "manifest_clean_wer.csv"
+
+def clean_coraal_lambda(text):
+    '''
+    Applies several important transformations to raw CORAAL transcripts.
+    Changes spelling on some words that are out of vocab for speech APIs.
+    i.e. "aks" -> "ask"
+    Removes CORAAL flags like unintelligible and redacted words.
+    '''
+
+    # Relabel CORAAL words. For consideration: aks -> ask?
+    split_words = text.split()
+    split_words = [x if x != 'busses' else 'buses' for x in split_words]
+    split_words = [x if x != 'aks' else 'ask' for x in split_words]
+    split_words = [x if x != 'aksing' else 'asking' for x in split_words]
+    split_words = [x if x != 'aksed' else 'asked' for x in split_words]
+    text = ' '.join(split_words)
+
+    # remove CORAAL unintelligible flags
+    text = re.sub("\/(?i)unintelligible\/",'',''.join(text))
+    text = re.sub("\/(?i)inaudible\/",'',''.join(text))
+    text = re.sub('\/RD(.*?)\/', '',''.join(text))
+    text = re.sub('\/(\?)\1*\/', '',''.join(text))
+
+    # remove nonlinguistic markers
+    text = remove_markers(text, ['<>', '()', '{}'])
+
+    return text
+
+def clean_coraal(df):
+    # Replace original unmatched CORAAL transcript square brackets with squiggly bracket
+    df.loc[:,'clean_text'] = df.loc[:,'groundtruth_text'].copy()
+    df.loc[:,'clean_text'] = df['clean_text'].str.replace('\[','\{')
+    df.loc[:,'clean_text'] = df['clean_text'].str.replace('\]','\}')
+
+    df['clean_text'] = df.apply(lambda x: clean_coraal_lambda(x['clean_text']), axis=1)
+    return df
+
+def clean_all_transcripts(df):
+    clean_df = df.copy()
+    clean_df['google_transcription'] = clean_df['google_transcription'].replace(np.nan, '', regex=True)
+
+    swear_words = ['nigga', 'niggas', 'shit', 'bitch', 'damn', 'fuck', 'fuckin', 'fucking', 'motherfuckin', 'motherfucking']
+    filler_words = ['um', 'uh', 'mm', 'hm', 'ooh', 'woo', 'mhm', 'huh', 'ha']
+
+    pre_cardinal = ['N', 'E', 'S', 'W', 'NE', 'NW', 'SE', 'SW']
+    post_cardinal = ['North', 'East', 'South', 'West', 'Northeast', 'Northwest', 'Southeast', 'Southwest']
+
+    pre_list = ['cuz', 'ok', 'o', 'till', 'yup', 'imma', 'mister', 'doctor',
+                'gonna', 'tryna',
+               'carryout', 'sawmill', 'highschool', 'worldclass',
+               'saint', 'street', 'state',
+                'avenue', 'road', 'boulevard',
+               'theatre', 'neighbour', 'neighbours', 'neighbourhood', 'programme']
+    post_list = ['cause', 'okay', 'oh', 'til', 'yep', 'ima', 'mr', 'dr',
+                 'going to', 'trying to',
+                'carry out', 'saw mill', 'high school', 'world class',
+                 'st', 'st', 'st',
+                 'ave', 'rd', 'blvd',
+                 'theater', 'neighbor', 'neighbors', 'neighborhood', 'program']
+
+    def clean_within_all(text):
+        # fix spacing in certain spellings
+        text = re.sub('T V','TV',''.join(text))
+        text = re.sub('D C','DC',''.join(text))
+
+        # remove remaining floating non-linguistic words
+        single_paren = ['<','>', '(',')', '{','}','[',']']
+        for paren in single_paren:
+            linguistic_words  = [word for word in text.split() if paren not in word]
+            text = ' '.join(linguistic_words)
+
+        # general string cleaning
+        text = re.sub(r"([a-z])\-([a-z])", r"\1 \2", text , 0, re.IGNORECASE) # replace inter-word hyphen with space
+        text = re.sub("'",'',''.join(text)) # remove apostrophe
+        text =re.sub(r'[^\s\w$]|_', ' ',text) # replace special characters with space, except $
+        text = re.sub("\s+"," ",''.join(text)) # standardize whitespace
+
+        # update numeric numbers to strings and remove $
+        text = re.sub("ft ²", "square feet", ''.join(text))
+        text = fix_numbers(text)
+        text = re.sub("\$",'dollars',''.join(text))
+        text = re.sub("\£",'pounds',''.join(text))
+
+        # standardize spellings
+        split_words = text.split()
+        for i in range(len(pre_list)):
+            split_words = [x if x.lower() != pre_list[i] else post_list[i] for x in split_words]
+        text = ' '.join(split_words)
+
+        # deal with cardinal directions
+        split_words_dir = text.split()
+        for i in range(len(pre_cardinal)):
+            split_words_dir = [x if x != pre_cardinal[i] else post_cardinal[i] for x in split_words_dir]
+        text = ' '.join(split_words_dir)
+
+        # deal with state abbreviations
+        text = fix_state_abbrevs(text)
+        text = text.lower()
+
+        # update spacing in certain spellings
+        spacing_list_pre = ['north east', 'north west', 'south east', 'south west', 'all right']
+        spacing_list_post = ['northeast', 'northwest', 'southeast', 'southwest', 'alright']
+        for i in range(len(spacing_list_pre)):
+            text = re.sub(spacing_list_pre[i], spacing_list_post[i],''.join(text))
+
+        # remove filler words and swear words
+        remove_words = swear_words + filler_words
+        resultwords  = [word for word in text.split() if word not in remove_words]
+        result = ' '.join(resultwords)
+
+        return result
+
+    clean_df['clean_text'] = df.apply(lambda x: clean_within_all(x['clean_text']), axis=1)
+    clean_df['clean_google_transcription'] = df.apply(lambda x: clean_within_all(x['google_transcription']), axis=1)
+
+    return df
+
+def wer_calc(transcripts, human_clean_col, asr_clean_col):
+    # Calculate WER
+    new_transcripts = transcripts.copy()
+    ground_truth = transcripts[human_clean_col].tolist()
+    for col in asr_clean_col:
+        new_transcripts[col] = new_transcripts[col].replace(np.nan, '', regex=True)
+        asr_trans = new_transcripts[col].tolist()
+        wer_list = []
+        for i in range(len(ground_truth)):
+            wer_list.append(wer(ground_truth[i], asr_trans[i]))
+        new_transcripts[col+"_wer"] = wer_list
+    return new_transcripts
+
+def apply_cleaning_rules(df):
+    #Cleans everything from CORAAL transcript
+    all_usable = clean_coraal(df)
+    clean_all = clean_all_transcripts(all_usable)
+    return clean_all
+
+if __name__ == '__main__':
+    #init manifest file
+    print("starting...")
+    all_snippets = pd.read_csv(MANIFEST_FILE)
+
+    clean_snippets = apply_cleaning_rules(all_snippets)
+
+        # Create ASR list for WER calculations
+    clean_asr_trans_list = ['clean_google']
+
+    # Run WER calculations on all usable snippets, with cleaning
+    # clean_transcripts_wer = wer_calc(clean_snippets, 'clean_text', clean_asr_trans_list)
+
+    clean_snippets.to_csv(OUTFILE)
