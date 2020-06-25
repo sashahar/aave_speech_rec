@@ -6,8 +6,8 @@ import re
 import csv
 from text_cleaning_utils import *
 
-MANIFEST_FILE = "manifest.csv"
-OUTFILE = "manifest_clean_wer.csv"
+MANIFEST_FILE = "PRV_manifest_transcribed.csv"
+OUTFILE = "PRV_manifest_wer.csv"
 
 def clean_coraal_lambda(text):
     '''
@@ -26,10 +26,12 @@ def clean_coraal_lambda(text):
     text = ' '.join(split_words)
 
     # remove CORAAL unintelligible flags
-    text = re.sub("\/(?i)unintelligible\/",'',''.join(text))
-    text = re.sub("\/(?i)inaudible\/",'',''.join(text))
+    text = re.sub("\/unintelligible\/",'',''.join(text))
+    text = re.sub("\/inaudible\/",'',''.join(text))
     text = re.sub('\/RD(.*?)\/', '',''.join(text))
     text = re.sub('\/(\?)\1*\/', '',''.join(text))
+    text = re.sub('\[', '',text) # remove square brackets from text
+    text = re.sub('\]', '',text) # remove square brackets from text
 
     # remove nonlinguistic markers
     text = remove_markers(text, ['<>', '()', '{}'])
@@ -37,10 +39,10 @@ def clean_coraal_lambda(text):
     return text
 
 def clean_coraal(df):
-    # Replace original unmatched CORAAL transcript square brackets with squiggly bracket
     df.loc[:,'clean_text'] = df.loc[:,'groundtruth_text'].copy()
-    df.loc[:,'clean_text'] = df['clean_text'].str.replace('\[','\{')
-    df.loc[:,'clean_text'] = df['clean_text'].str.replace('\]','\}')
+    # Replace original unmatched CORAAL transcript square brackets with squiggly bracket
+    # df.loc[:,'clean_text'] = df['clean_text'].str.replace('\[','\{')
+    # df.loc[:,'clean_text'] = df['clean_text'].str.replace('\]','\}')
 
     df['clean_text'] = df.apply(lambda x: clean_coraal_lambda(x['clean_text']), axis=1)
     return df
@@ -50,7 +52,7 @@ def clean_all_transcripts(df):
     clean_df['google_transcription'] = clean_df['google_transcription'].replace(np.nan, '', regex=True)
 
     swear_words = ['nigga', 'niggas', 'shit', 'bitch', 'damn', 'fuck', 'fuckin', 'fucking', 'motherfuckin', 'motherfucking']
-    filler_words = ['um', 'uh', 'mm', 'hm', 'ooh', 'woo', 'mhm', 'huh', 'ha']
+    filler_words = ['um', 'uh', 'mm', 'hm', 'ooh', 'woo', 'mhm', 'mm-hm''huh', 'ha']
 
     pre_cardinal = ['N', 'E', 'S', 'W', 'NE', 'NW', 'SE', 'SW']
     post_cardinal = ['North', 'East', 'South', 'West', 'Northeast', 'Northwest', 'Southeast', 'Southwest']
@@ -121,9 +123,9 @@ def clean_all_transcripts(df):
         return result
 
     clean_df['clean_text'] = df.apply(lambda x: clean_within_all(x['clean_text']), axis=1)
-    clean_df['clean_google_transcription'] = df.apply(lambda x: clean_within_all(x['google_transcription']), axis=1)
+    clean_df['clean_google_transcription'] = clean_df.apply(lambda x: clean_within_all(x['google_transcription']), axis=1)
 
-    return df
+    return clean_df
 
 def wer_calc(transcripts, human_clean_col, asr_clean_col):
     # Calculate WER
@@ -144,6 +146,7 @@ def apply_cleaning_rules(df):
     clean_all = clean_all_transcripts(all_usable)
     return clean_all
 
+
 if __name__ == '__main__':
     #init manifest file
     print("starting...")
@@ -151,10 +154,20 @@ if __name__ == '__main__':
 
     clean_snippets = apply_cleaning_rules(all_snippets)
 
+    old_len = len(clean_snippets)
+    print("Removing short snippets...")
+
+    clean_snippets['wordcount'] = clean_snippets['clean_text'].str.split().str.len()
+    clean_snippets = clean_snippets[clean_snippets['wordcount']>=5]
+    print("Num Removed = ", old_len - len(clean_snippets))
+
         # Create ASR list for WER calculations
-    clean_asr_trans_list = ['clean_google']
+    clean_asr_trans_list = ['clean_google_transcription']
 
     # Run WER calculations on all usable snippets, with cleaning
-    # clean_transcripts_wer = wer_calc(clean_snippets, 'clean_text', clean_asr_trans_list)
+    print("calculating word error rate...")
+    clean_transcripts_wer = wer_calc(clean_snippets, 'clean_text', clean_asr_trans_list)
 
-    clean_snippets.to_csv(OUTFILE)
+    print("overall WER: ", clean_transcripts_wer['clean_google_transcription_wer'].mean())
+
+    clean_transcripts_wer.to_csv(OUTFILE, index = False)

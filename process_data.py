@@ -17,14 +17,26 @@ import csv
 #     'data/DCA_audio_part07_2018.10.06', 'data/DCA_audio_part08_2018.10.06' \
 #     'data/DCA_audio_part09_2018.10.06', 'data/DCA_audio_part10_2018.10.06'],\
 
-AUDIO_DIRS = ['data/ROC_audio_part01_2020.05','data/ROC_audio_part02_2020.05',\
-    'data/ROC_audio_part03_2020.05','data/ROC_audio_part04_2020.05',\
-    'data/ROC_audio_part05_2020.05']
+# AUDIO_DIRS = ['data/ROC_audio_part01_2020.05','data/ROC_audio_part02_2020.05',\
+#     'data/ROC_audio_part03_2020.05','data/ROC_audio_part04_2020.05',\
+#     'data/ROC_audio_part05_2020.05']
 
-TXT_DIR = 'data/ROC_textfiles_2020.05'
-RESULT_DIR = 'data_processed_ROC'
-MANIFEST_FILE = 'ROC_manifest.csv'
-METADATA_FILE = 'data/ROC_metadata_2020.05.txt'
+AUDIO_DIRS = ['data/DCB_audio_part01_2018.10.06','data/DCB_audio_part02_2018.10.06',\
+'data/DCB_audio_part03_2018.10.06','data/DCB_audio_part04_2018.10.06',\
+'data/DCB_audio_part05_2018.10.06','data/DCB_audio_part06_2018.10.06',\
+'data/DCB_audio_part07_2018.10.06','data/DCB_audio_part08_2018.10.06',\
+'data/DCB_audio_part09_2018.10.06','data/DCB_audio_part10_2018.10.06',\
+'data/DCB_audio_part11_2018.10.06','data/DCB_audio_part12_2018.10.06',\
+'data/DCB_audio_part13_2018.10.06','data/DCB_audio_part14_2018.10.06',\
+]
+
+# AUDIO_DIRS = ['data/PRV_audio_part01_2018.10.06','data/PRV_audio_part02_2018.10.06',\
+#     'data/PRV_audio_part03_2018.10.06','data/PRV_audio_part04_2018.10.06']
+
+TXT_DIR = 'data/DCB_textfiles_2018.10.06' #'data/ROC_textfiles_2020.05'
+RESULT_DIR = 'data_processed_DCB'
+MANIFEST_FILE = 'DCB_manifest.csv'
+METADATA_FILE = 'data/DCB_metadata_2018.10.06.txt'
 MIN_AUDIO_LENGTH = 5000
 MAX_AUDIO_LENGTH = 50000 #50 seconds max length for audio segment
 
