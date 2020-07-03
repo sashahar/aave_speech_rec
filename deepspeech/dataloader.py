@@ -6,10 +6,17 @@ import scipy
 import json
 import torch
 import torch.nn as nn
-from scipy.io.wavfile import read
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
+
+audio_conf = {
+    'sample_rate': int = 44100  # The sample rate for the data/model features
+    'window_size': 0.02  # Window size for spectrogram generation (seconds)
+    'window_stride': 0.01  # Window stride for spectrogram generation (seconds)
+    'n_fft': 1024 #sample_rate*window_size, rounded to nearest power of 2 for efficiency
+    'window':scipy.signal.hamming
+}
 
 class AudioDataLoader(DataLoader):
     def __init__(self, *args, **kwargs):
@@ -44,7 +51,7 @@ def _collate_fn(batch):
     return inputs, targets, input_lengths, target_lengths, files
 
 class SpectrogramDataset(Dataset):
-    def __init__(self, manifest_filepath, char_vocab_path):
+    def __init__(self, manifest_filepath, char_vocab_path, audio_conf = audio_conf):
         super().__init__()
 
         with open(manifest_filepath) as f:
@@ -53,6 +60,7 @@ class SpectrogramDataset(Dataset):
         self.data_filepaths = data_filepaths
         self.size = len(data_filepaths)
         self.char2ind = self.create_char2ind_map(char_vocab_path)
+        self.audio_conf = audio_conf
 
     '''Takes in a file path to the character vocab and returns a dictionary
     mapping characters to indices'''
@@ -64,26 +72,26 @@ class SpectrogramDataset(Dataset):
 
     #Takes in an audio path and returns a normalized array representing the audio
     def load_audio(self, audio_path):
-        sample_rate, sound = read(audio_path)
-        sound = sound.astype('float32') / 32767  # normalize audio
-        if len(sound.shape) > 1:
-            if sound.shape[1] == 1:
-                sound = sound.squeeze()
-            else:
-                sound = sound.mean(axis=1)  # multiple channels, average
+        #returns audio time series with length duration*sample_rate
+        sound, sample_rate = librosa.load(audio_path, sr = self.audio_conf['sample_rate'])
         return sound
+
+    def get_mfcc_features(self, sound):
+        mfcc = librosa.feature.mfcc(sound, sr = self.audio_conf['sample_rate'], \
+            n_mfcc = 40, n_fft = self.audio_conf['n_ftt'], window = self.audio_conf['window'])
+        return mfcc
 
     #Takes in a sound array and returns a spectrogram
     def get_spectrogram(self, sound):
-        window_size = 0.02
-        window_stride = 0.01
-        sample_rate = 16000
         n_fft = int(sample_rate * window_size)
         win_length = n_fft
         hop_length = int(sample_rate * window_stride)
-        D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
-                                 win_length=win_length, window=scipy.signal.hamming)
+        #Return complex values spectrogram (D) - Short Time Fourier Transform
+        D = librosa.stft(sound, n_fft=self.audio_conf['n_ftt'], hop_length=self.audio_conf['n_ftt']//2,
+                                 win_length=self.audio_conf['window_size'], window=self.audio_conf['window'])
+        #Transofrms D into its magnitude and phase components
         spect, phase = librosa.magphase(D)
+        # S = log(S + 1)
         spect = np.log1p(spect)
         spect = torch.FloatTensor(spect)
         #Normalize spectrogram
