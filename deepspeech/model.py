@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
 import math
+from dataloader import audio_conf
 
 RNN_HIDDEN_SIZE = 512
 
@@ -85,7 +86,7 @@ class SequenceWise(nn.Module):
         return x
 
 class DeepSpeech(nn.Module):
-    def __init__(self, sample_rate=16000, rnn_hidden_size = RNN_HIDDEN_SIZE, nb_layers=4, window_size=0.02):
+    def __init__(self, sample_rate=audio_conf['sample_rate'], rnn_hidden_size = RNN_HIDDEN_SIZE, nb_layers=4, window_size=audio_conf['window_size']):
         super().__init__()
 
         self.sample_rate = sample_rate
