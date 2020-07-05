@@ -173,6 +173,10 @@ if __name__ == '__main__':
             torch.cuda.empty_cache()
             # try:
             inputs, targets, input_sizes, target_sizes, _ = data
+            print(inputs.shape)
+            print(input_sizes)
+            print(targets.shape)
+            print(target_sizes)
 
             inputs = inputs.to(device)
             targets = targets.to(device)
