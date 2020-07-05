@@ -171,32 +171,32 @@ if __name__ == '__main__':
 
             #CLEAR CACHE
             torch.cuda.empty_cache()
-            try:
-                inputs, targets, input_sizes, target_sizes, _ = data
+            # try:
+            inputs, targets, input_sizes, target_sizes, _ = data
 
-                inputs = inputs.to(device)
-                targets = targets.to(device)
+            inputs = inputs.to(device)
+            targets = targets.to(device)
 
-                out, output_sizes = model(inputs, input_sizes)
-                out = out.transpose(0, 1)  # TxNxH
-                loss = ctc_loss(out, targets, output_sizes,
-                                target_sizes).to(device)
-                optimizer.zero_grad()
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 350)
-                optimizer.step()
+            out, output_sizes = model(inputs, input_sizes)
+            out = out.transpose(0, 1)  # TxNxH
+            loss = ctc_loss(out, targets, output_sizes,
+                            target_sizes).to(device)
+            optimizer.zero_grad()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 350)
+            optimizer.step()
 
-                avg_loss += float(loss.detach())
-                losses.update(float(loss.detach()), inputs.size(0))
+            avg_loss += float(loss.detach())
+            losses.update(float(loss.detach()), inputs.size(0))
 
-                batch_time.update(time.time() - end)
-                end = time.time()
-            except:
-                fp = LOG_DIR + "/" + "ERROR_DUMP" + ".txt"
-                print("Encountered CUDA memory Error, saving dump to: {}".format(fp))
-                with open(fp, "w") as file:
-                    file.write("memory summary: " + str(torch.cuda.memory_summary()))
-                print(torch.cuda.memory_summary())
+            batch_time.update(time.time() - end)
+            end = time.time()
+            # except:
+            #     fp = LOG_DIR + "/" + "ERROR_DUMP" + ".txt"
+            #     print("Encountered CUDA memory Error, saving dump to: {}".format(fp))
+            #     with open(fp, "w") as file:
+            #         file.write("memory summary: " + str(torch.cuda.memory_summary()))
+            #     print(torch.cuda.memory_summary())
 
 
 
