@@ -11,10 +11,10 @@ from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
 audio_conf = {
-    'sample_rate': int = 44100  # The sample rate for the data/model features
-    'window_size': 0.02  # Window size for spectrogram generation (seconds)
-    'window_stride': 0.01  # Window stride for spectrogram generation (seconds)
-    'n_fft': 1024 #sample_rate*window_size, rounded to nearest power of 2 for efficiency
+    'sample_rate': 44100,  # The sample rate for the data/model features
+    'window_size': 0.02,  # Window size for spectrogram generation (seconds)
+    'window_stride': 0.01,  # Window stride for spectrogram generation (seconds)
+    'n_fft': 1024, #sample_rate*window_size, rounded to nearest power of 2 for efficiency
     'window':scipy.signal.hamming
 }
 
@@ -78,17 +78,17 @@ class SpectrogramDataset(Dataset):
 
     def get_mfcc_features(self, sound):
         mfcc = librosa.feature.mfcc(sound, sr = self.audio_conf['sample_rate'], \
-            n_mfcc = 40, n_fft = self.audio_conf['n_ftt'], window = self.audio_conf['window'])
+            n_mfcc = 40, n_fft = self.audio_conf['n_fft'], window = self.audio_conf['window'])
         return mfcc
 
     #Takes in a sound array and returns a spectrogram
     def get_spectrogram(self, sound):
-        n_fft = int(sample_rate * window_size)
+        n_fft = self.audio_conf['n_fft']
         win_length = n_fft
-        hop_length = int(sample_rate * window_stride)
+        hop_length = int(self.audio_conf['sample_rate'] * self.audio_conf['window_stride'])
         #Return complex values spectrogram (D) - Short Time Fourier Transform
-        D = librosa.stft(sound, n_fft=self.audio_conf['n_ftt'], hop_length=self.audio_conf['n_ftt']//2,
-                                 win_length=self.audio_conf['window_size'], window=self.audio_conf['window'])
+        D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
+                                 win_length=win_length, window=self.audio_conf['window'])
         #Transofrms D into its magnitude and phase components
         spect, phase = librosa.magphase(D)
         # S = log(S + 1)
