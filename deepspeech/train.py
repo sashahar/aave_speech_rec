@@ -207,14 +207,6 @@ if __name__ == '__main__':
             torch.empty
 
             if i % 100 == 0:
-                print(torch.cuda.memory_summary())
-            #log memory usage: temporarily suspended
-            # with open(save_model_memory_usage, "a") as file:
-            #     file.write("{},{}, {},{}, {}\n".format(
-            #         epoch, i, torch.cuda.memory_allocated(), torch.cuda.max_memory_allocated(), max(target_sizes)))
-
-            # save to file
-            if False:
                 with open(loss_log_file, "a") as file:
                     file.write("{},{}, {},{},{}\n".format(
                         epoch, i, losses.avg, float('nan'), float('nan')))

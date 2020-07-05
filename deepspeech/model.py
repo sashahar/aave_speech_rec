@@ -4,6 +4,8 @@ import torch.nn.functional as F
 from collections import OrderedDict
 import math
 
+RNN_HIDDEN_SIZE = 512
+
 class InferenceBatchSoftmax(nn.Module):
     def forward(self, input_):
         if not self.training:
@@ -83,7 +85,7 @@ class SequenceWise(nn.Module):
         return x
 
 class DeepSpeech(nn.Module):
-    def __init__(self, sample_rate=16000, rnn_hidden_size = 750, nb_layers=4, window_size=0.02):
+    def __init__(self, sample_rate=16000, rnn_hidden_size = RNN_HIDDEN_SIZE, nb_layers=4, window_size=0.02):
         super().__init__()
 
         self.sample_rate = sample_rate
