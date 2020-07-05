@@ -14,10 +14,11 @@ from os.path import isfile, join
 
 VERSION = '0.3.0'
 
-WAV_FILE = 'test_dir/wav/switchboard.wav'
-WAV_DIR = 'test_dir/wav'
-OUTPUT_DIR = 'test_dir/txt'
-POOL_SIZE = 5
+WAV_DIR = 'data_processed_16/wav'
+# OUTPUT_DIR = 'test_dir/txt'
+MANIFEST_FILE = 'ROC_manifest_16_temp.csv'
+OUTPUT_FILE = "mod9_output/ROC_transcriptions.csv"
+POOL_SIZE = 10
 
 logging.basicConfig(level='INFO', format="%(levelname)s: (%(thread)d) - %(message)s")
 lock = threading.Lock()
@@ -131,6 +132,7 @@ def recv_response(sock, stream):
 
 def thread_routine(args_tuple):
     options_json, filename = args_tuple
+    print(filename)
     #Connect to server by initializing socket
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -158,7 +160,6 @@ def thread_routine(args_tuple):
         try:
             line = sockfile.readline()
             # if line == "": continue
-            print("LINE:", line)
             response = json.loads(line)
             if 'status' in response:
                 thread_status = response['status']
@@ -169,7 +170,6 @@ def thread_routine(args_tuple):
             sock.close()
             return
 
-    print("STATUS: ", thread_status)
     #If we get here, connection status is processing
     #We're free to send data
     file_stream = open(filename, "rb")
@@ -323,7 +323,7 @@ if __name__ == '__main__':
             logging.exception('Could not parse --options-json argument.')
             sys.exit(1)
 
-    all_wav_files = [(options_json, join(WAV_DIR, f)) for f in os.listdir(WAV_DIR) if isfile(join(WAV_DIR, f)) and f.split(".")[-1] == 'wav']
+    all_wav_files = [(options_json, elem) for elem in pd.read_csv(MANIFEST_FILE)['wav_path']]#[(options_json, join(WAV_DIR, f)) for f in os.listdir(WAV_DIR) if isfile(join(WAV_DIR, f)) and f.split(".")[-1] == 'wav']
     threadpool = Pool(POOL_SIZE)
     output_dict = {'filename': [], 'mod9_transcription': []}
     for result in threadpool.map(thread_routine, all_wav_files):
@@ -333,72 +333,4 @@ if __name__ == '__main__':
 
     print("Done processing audio files...")
     output_dataframe = pd.DataFrame(output_dict)
-    output_dataframe.to_csv("test_dir/test.csv", index = False)
-
-    # Connect to the server and use a file-like interface to the socket.
-    # try:
-    #     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #     sock.connect((args.host, args.port))
-    # except Exception:
-    #     logging.exception("Could not connect to %s:%s", args.host, args.port)
-    #     sys.exit(1)
-    # logging.info("Connected to %s:%s", args.host, args.port)
-
-    # Start by sending the options as JSON on the first line (terminated w/ newline character).
-    # first_line = json.dumps(options_json, separators=(',', ':'))+'\n'
-    # sock.sendall(first_line.encode())
-    # logging.info("Sent client options as JSON on first line: %s", first_line.strip())
-
-    # Create a separate thread to read from the socket asynchronously.
-    # recv_thread = threading.Thread(target=recv_response, args=(sock, sys.stdout))
-    # recv_thread.daemon = True
-    # recv_thread.start()
-
-    # Commands other than decode don't require additional data to be sent.
-    #Not needed because we are only decoding
-    # if args.command != 'decode':
-    #     recv_thread.join()
-    #     sock.close()
-    #     if recv_thread._status == 'failed':
-    #         sys.exit(1)
-    #     else:
-    #         sys.exit(0)
-
-    # Wait until the server reports an expected initial status of 'processing'.
-    # while recv_thread.isAlive() and getattr(recv_thread, '_status', None) is None:
-    #     time.sleep(1)
-    # if recv_thread._status != 'processing':
-    #     logging.error('Expected initial "processing" status for decode command.')
-    #     sock.close()
-    #     sys.exit(1)
-
-    # Send data in binary chunks, until EOF on stdin.
-    # logging.info('Start sending data.')
-    # start_time = time.time()
-    # bits_sent = 0
-    # file_stream = open(WAV_FILE, "rb")
-    # for chunk in iter(lambda: file_stream.read(CHUNK_SIZE), b''):
-    #     sock.sendall(chunk)
-    #
-    # # Send custom EOF sequence to indicate that the client is done sending, but still receiving.
-    # sock.sendall(options_json['eof'].encode())
-    # logging.info("Done sending data.  Sent final EOF bytes: %s", options_json['eof'])
-
-    # Wait until the server finishes sending its response messages.
-    # A blocking .join() is simpler, but main thread won't catch an interrupt (e.g. Ctl-C).
-    # while recv_thread.isAlive():
-    #     time.sleep(0.1)
-    # logging.info('Done receiving response.')
-    #
-    # # Fully shutdown and close the socket.
-    # sock.close()
-    # logging.info('Closed connection.')
-
-    # Exit with an appropriate exit code.
-    # if recv_thread._status == 'completed':
-    #     sys.exit(0)
-    # elif recv_thread._status == 'failed':
-    #     sys.exit(1)
-    # else:
-    #     logging.error("Final message status (%s) was unexpected.", recv_thread._status)
-    #     sys.exit(1)
+    output_dataframe.to_csv(OUTPUT_FILE, index = False)
