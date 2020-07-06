@@ -70,7 +70,7 @@ class SpectrogramDataset(Dataset):
         char2ind = dict([(characters[i], i) for i in range(len(characters))])
         return char2ind
 
-    def clean_coraal_transcript(text):
+    def clean_coraal_transcript(self, text):
         #convert to upper case
         text = clean_coraal_lambda(text)
         text = clean_within_all_lambda(text)
