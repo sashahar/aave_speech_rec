@@ -17,7 +17,7 @@ RESULT_DIR = 'data_processed_voc'
 MANIFEST_FILE = 'voc_manifest.csv'
 ID_FILE = 'voc_ids.csv'
 MIN_AUDIO_LENGTH = 5000
-MAX_AUDIO_LENGTH = 50000 #50 seconds max length for audio segment
+MAX_AUDIO_LENGTH = 20000 #20 seconds max length for audio segment
 
 def get_name(filename):
 	'''
@@ -48,7 +48,6 @@ def find_interviewee(root, transcript):
 			if first.lower() in speaker.attrib['name'].lower():
 				print(speaker.attrib['name'])
 				return speaker.attrib['id']
-	print("ERRRRRROR!!!!")
 	return "error"
 
 def is_interviewee(turn, interviewee):
@@ -154,8 +153,11 @@ def process_single_audio_file_eaf(root_dir, filename, identifier, transcript):
 			curr_text.append(text)
 		last_end = end_time
 
-#TODO: this function will eventually be a thread routine.
-#good candidate for multiprocessing because of letency of reading files
+		#Write out if last turn
+		if i == num_turns - 1:
+			if total_time >= MIN_AUDIO_LENGTH:
+				write_files(identifier, num_segments, result, curr_text)
+
 def process_single_audio_file(root_dir, filename, identifier):
     #open text file (text grid?)
     txt_filepath = path.join(TXT_DIR, filename + '.trs')
