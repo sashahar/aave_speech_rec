@@ -119,7 +119,7 @@ class SpectrogramDataset(Dataset):
     def parse_transcript(self, transcript_path, char2ind):
         with open(transcript_path, 'r', encoding='utf8') as transcript_file:
             transcript = transcript_file.read().replace('\n', '')
-        transcript = clean_coraal_transcript(transcript)
+        transcript = self.clean_coraal_transcript(transcript)
         print("TRANSCRIPT: ", transcript)
         transcript = list(filter(None, [char2ind.get(x) for x in list(transcript)]))
         return transcript
