@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import librosa
 import scipy
 import json
+import re
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -69,6 +70,12 @@ class SpectrogramDataset(Dataset):
             characters = str(''.join(json.load(char_vocab_file)))
         char2ind = dict([(characters[i], i) for i in range(len(characters))])
         return char2ind
+
+    def clean_coraal_transcript(self, text):
+        #convert to upper case
+        text = clean_coraal_lambda(text)
+        text = clean_within_all_lambda(text)
+        return text
 
     #Takes in an audio path and returns a normalized array representing the audio
     def load_audio(self, audio_path):
