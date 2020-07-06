@@ -101,7 +101,7 @@ class DeepSpeech(nn.Module):
             nn.BatchNorm2d(32),
         ))
 
-        rnn_input_size = int(math.floor((sample_rate * window_size) / 2) + 1)
+        rnn_input_size = int(math.floor((audio_conf['n_fft']) / 2) + 1)
         rnn_input_size = int(math.floor(rnn_input_size + 2 * 20 - 41) / 2 + 1)
         rnn_input_size = int(math.floor(rnn_input_size + 2 * 10 - 21) / 2 + 1)
         rnn_input_size *= 32
@@ -131,7 +131,6 @@ class DeepSpeech(nn.Module):
         sizes = x.size()
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
         x = x.transpose(1, 2).transpose(0, 1).contiguous()  # TxNxH
-
         for rnn in self.rnns:
             x = rnn(x, output_lengths)
 

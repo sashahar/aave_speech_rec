@@ -14,7 +14,7 @@ audio_conf = {
     'sample_rate': 44100,  # The sample rate for the data/model features
     'window_size': 0.02,  # Window size for spectrogram generation (seconds)
     'window_stride': 0.01,  # Window stride for spectrogram generation (seconds)
-    'n_fft': 1024, #sample_rate*window_size, rounded to nearest power of 2 for efficiency
+    'n_fft': 1024, #sample_rate*window_size rounded to nearest power of 2, for efficiency
     'window':scipy.signal.hamming
 }
 
