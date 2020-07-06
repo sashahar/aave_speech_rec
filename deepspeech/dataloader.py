@@ -83,7 +83,7 @@ class SpectrogramDataset(Dataset):
 
     #Takes in a sound array and returns a spectrogram
     def get_spectrogram(self, sound):
-        n_fft = self.audio_conf[n_fft']
+        n_fft = self.audio_conf['n_fft']
         win_length = n_fft
         hop_length = int(self.audio_conf['sample_rate'] * self.audio_conf['window_stride'])
         #Return complex values spectrogram (D) - Short Time Fourier Transform
