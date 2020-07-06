@@ -83,12 +83,20 @@ class SpectrogramDataset(Dataset):
 
     #Takes in a sound array and returns a spectrogram
     def get_spectrogram(self, sound):
-        n_fft = self.audio_conf['n_fft']
+        # n_fft = self.audio_conf['n_fft']
+        # win_length = n_fft
+        # hop_length = int(self.audio_conf['sample_rate'] * self.audio_conf['window_stride'])
+        # #Return complex values spectrogram (D) - Short Time Fourier Transform
+        # D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
+        #                          win_length=win_length, window=self.audio_conf['window'])
+        window_size = 0.02
+        window_stride = 0.01
+        sample_rate = 44100
+        n_fft = int(sample_rate * window_size)
         win_length = n_fft
-        hop_length = int(self.audio_conf['sample_rate'] * self.audio_conf['window_stride'])
-        #Return complex values spectrogram (D) - Short Time Fourier Transform
+        hop_length = int(sample_rate * window_stride)
         D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
-                                 win_length=win_length, window=self.audio_conf['window'])
+                                 win_length=win_length, window=scipy.signal.hamming)
         #Transofrms D into its magnitude and phase components
         spect, phase = librosa.magphase(D)
         # S = log(S + 1)
