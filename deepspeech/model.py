@@ -101,7 +101,7 @@ class DeepSpeech(nn.Module):
             nn.BatchNorm2d(32),
         ))
 
-        rnn_input_size = int(math.floor((sample_rate * window_size) / 2) + 1)
+        rnn_input_size = int(math.floor((audio_conf['n_fft']) / 2) + 1)
         rnn_input_size = int(math.floor(rnn_input_size + 2 * 20 - 41) / 2 + 1)
         rnn_input_size = int(math.floor(rnn_input_size + 2 * 10 - 21) / 2 + 1)
         rnn_input_size *= 32
