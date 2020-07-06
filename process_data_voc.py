@@ -17,7 +17,8 @@ RESULT_DIR = 'data_processed_voc'
 MANIFEST_FILE = 'voc_manifest.csv'
 ID_FILE = 'voc_ids.csv'
 MIN_AUDIO_LENGTH = 5000
-MAX_AUDIO_LENGTH = 20000 #20 seconds max length for audio segment
+CUT_AUDIO_LENGTH = 20000 #20 seconds max length for audio segment
+MAX_AUDIO_LENGTH = 50000 #Absolute max audio length
 
 def get_name(filename):
 	'''
@@ -31,7 +32,7 @@ def write_files(identifier, num_segments, result, curr_text):
     result_path = path.join(RESULT_DIR + "/wav", 'voc_' + str(identifier) + '_part_{}'.format(num_segments) + '.wav')
     result.export(result_path, format = "wav")
 
-    result_text_path = path.join(RESULT_DIR + "/txt", 'voc_' + str(identifier) + '_part_{}'.format(num_segments) + '.txt')
+    result_text_path = path.join(RESULT_DIR + "/txt_raw", 'voc_' + str(identifier) + '_part_{}'.format(num_segments) + '.txt')
     groundtruth_text = ' '.join(curr_text)
     with open(result_text_path, "w") as txt_file:
         txt_file.write(' '.join(curr_text))
@@ -73,23 +74,40 @@ def process_single_audio_file_trs(root_dir, filename, identifier, transcript):
 	result = AudioSegment.silent(duration=0)
 	
 	for i, turn in enumerate(root.findall("Episode/Section/Turn")):
-		if is_interviewee(turn, interviewee):
-			t1 = float(turn.attrib['startTime']) * 1000 #convert sec to millisec
-			t2 = float(turn.attrib['endTime']) * 1000 #convert sec to millisec
-			result += audio_segment[t1:t2]
-			total_time += t2 - t1
-			text = "".join(turn.itertext()).strip().replace('\n', ' ')
-			text = re.sub('\[.*?\]', '', text)
-			text = re.sub(' +', ' ', text) #Do we want to make them lower case and strip punctuation? Also how should we deal with disfluencies in the transcripts?
-			if text != "":
+		syncs = turn.findall("Sync")
+		start_time = float(turn.attrib['startTime']) * 1000 #convert sec to millisec
+		end_time = float(turn.attrib['endTime']) * 1000 #convert sec to millisec
+		
+		if is_interviewee(turn, interviewee): 
+			for j in range(len(syncs)):	
+				sync = syncs[j]
+				sync_start = float(sync.attrib['time']) * 1000
+				if j < len(syncs) - 1:
+					sync_end = float(syncs[j + 1].attrib['time']) * 1000
+				else:
+					sync_end = end_time
+
+				result += audio_segment[sync_start:sync_end]
+				total_time += sync_end - sync_start
+				text = sync.tail.strip().replace('\n', ' ')
+				text = re.sub(' +', ' ', text) #Do we want to make them lower case and strip punctuation? Also how should we deal with disfluencies in the transcripts?
 				curr_text.append(text)
-		if not is_interviewee(turn, interviewee) or total_time >= MAX_AUDIO_LENGTH or (i == num_turns - 1):
-			if total_time >= MIN_AUDIO_LENGTH:
-				write_files(identifier, num_segments, result, curr_text)
-				num_segments += 1
-			curr_text = []
-			total_time = 0
-			result = AudioSegment.silent(duration=0)
+
+				if total_time >= CUT_AUDIO_LENGTH or (i == num_turns - 1 and j == len(syncs) - 1):
+					if total_time >= MIN_AUDIO_LENGTH and total_time <= MAX_AUDIO_LENGTH:
+						write_files(identifier, num_segments, result, curr_text)
+						num_segments += 1
+					curr_text = []
+					total_time = 0
+					result = AudioSegment.silent(duration=0)
+
+		if not is_interviewee(turn, interviewee):
+				if total_time >= MIN_AUDIO_LENGTH and total_time <= MAX_AUDIO_LENGTH:
+					write_files(identifier, num_segments, result, curr_text)
+					num_segments += 1
+				curr_text = []
+				total_time = 0
+				result = AudioSegment.silent(duration=0)
 
 def create_time_slot_dictionary(root):
 	time_slots = {}
@@ -134,8 +152,8 @@ def process_single_audio_file_eaf(root_dir, filename, identifier, transcript):
 		start_time = time_slots[turn.attrib["TIME_SLOT_REF1"]]
 		end_time = time_slots[turn.attrib["TIME_SLOT_REF2"]]
 
-		if not (start_time - last_end < cut_off) or total_time >= MAX_AUDIO_LENGTH or (i == num_turns - 1):
-			if total_time >= MIN_AUDIO_LENGTH:
+		if not (start_time - last_end < cut_off) or total_time >= CUT_AUDIO_LENGTH or (i == num_turns - 1):
+			if total_time >= MIN_AUDIO_LENGTH and total_time <= MAX_AUDIO_LENGTH:
 				write_files(identifier, num_segments, result, curr_text)
 				num_segments += 1
 			curr_text = []
@@ -146,16 +164,14 @@ def process_single_audio_file_eaf(root_dir, filename, identifier, transcript):
 		result += audio_segment[last_end:end_time]
 		total_time += end_time - last_end
 		text = "".join(turn.itertext()).strip().replace('\n', ' ')
-		text = re.sub('\[.*?\]', '', text)
-		text = re.sub('\\{.*?\}', '', text)
-		text = re.sub(' +', ' ', text) #Do we want to make them lower case and strip punctuation? Also how should we deal with disfluencies in the transcripts?
-		if text != "":
-			curr_text.append(text)
+		text = re.sub(' +', ' ', text)
+		curr_text.append(text)
+		
 		last_end = end_time
 
 		#Write out if last turn
 		if i == num_turns - 1:
-			if total_time >= MIN_AUDIO_LENGTH:
+			if total_time >= MIN_AUDIO_LENGTH and total_time <= MAX_AUDIO_LENGTH:
 				write_files(identifier, num_segments, result, curr_text)
 
 def process_single_audio_file(root_dir, filename, identifier):
