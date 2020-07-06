@@ -9,6 +9,59 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
+from process_transcriptions import *
+
+def clean_within_all_lambda(text):
+    # fix spacing in certain spellings
+    text = re.sub('T V','TV',''.join(text))
+    text = re.sub('D C','DC',''.join(text))
+
+    # remove remaining floating non-linguistic words
+    single_paren = ['<','>', '(',')', '{','}','[',']']
+    for paren in single_paren:
+        linguistic_words  = [word for word in text.split() if paren not in word]
+        text = ' '.join(linguistic_words)
+
+    # general string cleaning
+    text = re.sub(r"([a-z])\-([a-z])", r"\1 \2", text , 0, re.IGNORECASE) # replace inter-word hyphen with space
+    #DO NO REMOVE APOSTROPHES
+    text =re.sub(r'[^\s\w$]|_', ' ',text) # replace special characters with space, except $
+    text = re.sub("\s+"," ",''.join(text)) # standardize whitespace
+
+    # update numeric numbers to strings and remove $
+    text = re.sub("ft ²", "square feet", ''.join(text))
+    text = fix_numbers(text)
+    text = re.sub("\$",'dollars',''.join(text))
+    text = re.sub("\£",'pounds',''.join(text))
+
+    # standardize spellings
+    split_words = text.split()
+    for i in range(len(pre_list)):
+        split_words = [x if x.lower() != pre_list[i] else post_list[i] for x in split_words]
+    text = ' '.join(split_words)
+
+    # deal with cardinal directions
+    split_words_dir = text.split()
+    for i in range(len(pre_cardinal)):
+        split_words_dir = [x if x != pre_cardinal[i] else post_cardinal[i] for x in split_words_dir]
+    text = ' '.join(split_words_dir)
+
+    # deal with state abbreviations
+    text = fix_state_abbrevs(text)
+    text = text.lower()
+
+    # update spacing in certain spellings
+    spacing_list_pre = ['north east', 'north west', 'south east', 'south west', 'all right']
+    spacing_list_post = ['northeast', 'northwest', 'southeast', 'southwest', 'alright']
+    for i in range(len(spacing_list_pre)):
+        text = re.sub(spacing_list_pre[i], spacing_list_post[i],''.join(text))
+
+    # remove filler words and swear words
+    remove_words = swear_words + filler_words
+    resultwords  = [word for word in text.split() if word not in remove_words]
+    result = ' '.join(resultwords)
+
+    return result.upper()
 
 audio_conf = {
     'sample_rate': 44100,  # The sample rate for the data/model features
@@ -70,6 +123,12 @@ class SpectrogramDataset(Dataset):
         char2ind = dict([(characters[i], i) for i in range(len(characters))])
         return char2ind
 
+    def clean_coraal_transcript(text):
+        #convert to upper case
+        text = clean_coraal_lambda(text)
+        text = clean_within_all_lambda(text)
+        return text
+
     #Takes in an audio path and returns a normalized array representing the audio
     def load_audio(self, audio_path):
         #returns audio time series with length duration*sample_rate
@@ -113,6 +172,8 @@ class SpectrogramDataset(Dataset):
     def parse_transcript(self, transcript_path, char2ind):
         with open(transcript_path, 'r', encoding='utf8') as transcript_file:
             transcript = transcript_file.read().replace('\n', '')
+        transcript = clean_coraal_transcript(transcript)
+        print("TRANSCRIPT: ", transcript)
         transcript = list(filter(None, [char2ind.get(x) for x in list(transcript)]))
         return transcript
 
