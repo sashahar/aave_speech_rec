@@ -7,6 +7,7 @@ from os import path
 import threading
 import re
 import csv
+from process_transcriptions import *
 
 # AUDIO_DIRS = ['data/ATL_audio_part01_2020.05','data/ATL_audio_part02_2020.05',\
 #     'data/ATL_audio_part03_2020.05','data/ATL_audio_part04_2020.05']
@@ -21,24 +22,36 @@ import csv
 #     'data/ROC_audio_part03_2020.05','data/ROC_audio_part04_2020.05',\
 #     'data/ROC_audio_part05_2020.05']
 
-AUDIO_DIRS = ['data/DCB_audio_part01_2018.10.06','data/DCB_audio_part02_2018.10.06',\
-'data/DCB_audio_part03_2018.10.06','data/DCB_audio_part04_2018.10.06',\
-'data/DCB_audio_part05_2018.10.06','data/DCB_audio_part06_2018.10.06',\
-'data/DCB_audio_part07_2018.10.06','data/DCB_audio_part08_2018.10.06',\
-'data/DCB_audio_part09_2018.10.06','data/DCB_audio_part10_2018.10.06',\
-'data/DCB_audio_part11_2018.10.06','data/DCB_audio_part12_2018.10.06',\
-'data/DCB_audio_part13_2018.10.06','data/DCB_audio_part14_2018.10.06',\
+AUDIO_DIRS = [
+#DC DATA
+# 'data/DCB_audio_part01_2018.10.06','data/DCB_audio_part02_2018.10.06',\
+# 'data/DCB_audio_part03_2018.10.06','data/DCB_audio_part04_2018.10.06',\
+# 'data/DCB_audio_part05_2018.10.06','data/DCB_audio_part06_2018.10.06',\
+# 'data/DCB_audio_part07_2018.10.06','data/DCB_audio_part08_2018.10.06',\
+# 'data/DCB_audio_part09_2018.10.06','data/DCB_audio_part10_2018.10.06',\
+# 'data/DCB_audio_part11_2018.10.06','data/DCB_audio_part12_2018.10.06',\
+# 'data/DCB_audio_part13_2018.10.06','data/DCB_audio_part14_2018.10.06',\
+#ROC DATA
+# 'data/ROC_audio_part01_2020.05','data/ROC_audio_part02_2020.05',\
+# 'data/ROC_audio_part03_2020.05','data/ROC_audio_part04_2020.05',\
+# 'data/ROC_audio_part05_2020.05',\
+# #ATL DATA
+'data/ATL/ATL_audio_part01_2020.05','data/ATL/ATL_audio_part02_2020.05',\
+'data/ATL/ATL_audio_part03_2020.05','data/ATL/ATL_audio_part04_2020.05',\
+# #PRV DATA
+# 'data/PRV_audio_part01_2018.10.06','data/PRV_audio_part02_2018.10.06',\
+# 'data/PRV_audio_part03_2018.10.06','data/PRV_audio_part04_2018.10.06'
 ]
 
 # AUDIO_DIRS = ['data/PRV_audio_part01_2018.10.06','data/PRV_audio_part02_2018.10.06',\
 #     'data/PRV_audio_part03_2018.10.06','data/PRV_audio_part04_2018.10.06']
 
-TXT_DIR = 'data/DCB_textfiles_2018.10.06' #'data/ROC_textfiles_2020.05'
-RESULT_DIR = 'data_processed_DCB'
-MANIFEST_FILE = 'DCB_manifest.csv'
-METADATA_FILE = 'data/DCB_metadata_2018.10.06.txt'
+TXT_DIR = 'data/ATL/ATL_textfiles_2020.05' #'data/ROC_textfiles_2020.05'
+RESULT_DIR = 'data_processed_ATL'
+MANIFEST_FILE = 'ATL_manifest.csv'
+METADATA_FILE = 'data/ATL/ATL_metadata_2020.05.txt'
 MIN_AUDIO_LENGTH = 5000
-MAX_AUDIO_LENGTH = 50000 #50 seconds max length for audio segment
+MAX_AUDIO_LENGTH = 20000 #20 seconds max length for audio segment
 
 def is_interviewer(str):
     return str.find("int") != -1
@@ -62,28 +75,32 @@ def get_metadata(filepath):
     return age, gender
 
 def write_files(filepath, num_segments, result, curr_text):
-
+    #WRITE_WAV_FILE
     result_path = path.join(RESULT_DIR + "/wav", \
         filepath + '_part_{}'.format(num_segments) + '.wav')
     result.export(result_path, format = "wav")
 
 
-    result_text_path = path.join(RESULT_DIR + "/txt", \
+    #WRITE RAW TEXT
+    result_text_path = path.join(RESULT_DIR + "/txt_raw", \
         filepath + '_part_{}'.format(num_segments) + '.txt')
     groundtruth_text = ' '.join(curr_text)
     with open(result_text_path, "w") as txt_file:
-        txt_file.write(' '.join(curr_text))
+        txt_file.write(groundtruth_text)
 
-    #write to manifest
-    # with open(MANIFEST_FILE, "a") as manifest_file:
-    #     print("writing to manifest: ", MANIFEST_FILE)
-    #     print("{},{},{},{}\n".format(
-    #                 result_path, result_text_path, groundtruth_text, len(result)/1000))
+    #WRITE ADJUSTED TEXT
+    result_text_path = path.join(RESULT_DIR + "/txt", \
+        filepath + '_part_{}'.format(num_segments) + '.txt')
+    groundtruth_text = clean_coraal_lambda(groundtruth_text)
+    groundtruth_text = clean_within_all(groundtruth_text)
+    groundtruth_text = groundtruth_text.upper()
+    with open(result_text_path, "w") as txt_file:
+        txt_file.write(groundtruth_text)
+
+    #WRITE ROW IN MANIFEST FILE
     age, gender = get_metadata(filepath)
     writer = csv.writer(open(MANIFEST_FILE, "a"))
     writer.writerow([result_path, result_text_path, groundtruth_text, len(result)/1000, age, gender])
-        # manifest_file.write("\{},{},{},{}\n".format(
-        #             result_path, result_text_path, groundtruth_text, len(result)/1000))
 
 def is_useful_content(str):
     x = re.search("\(pause [0-9]\.[0-9]{2}\)", str)

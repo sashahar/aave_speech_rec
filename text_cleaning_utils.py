@@ -165,7 +165,6 @@ def fix_numbers(text):
         new_list.append(new_word)
 
     text = ' '.join(new_list)
-    text =re.sub(r'[^\s\w$]|_', ' ',text)
 
     # Deal with written out years (two thousand and ten -> twenty ten)
     for double_dig in range(10, 100):
