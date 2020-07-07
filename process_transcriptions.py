@@ -11,22 +11,16 @@ OUTFILE = "transcriptions/ROC_manifest_wer_new.csv"
 
 #globally Accessible lists
 swear_words = ['nigga', 'niggas', 'shit', 'bitch', 'damn', 'fuck', 'fuckin', 'fucking', 'motherfuckin', 'motherfucking']
-filler_words = ['um', 'uh', 'mm', 'hm', 'ooh', 'woo', 'mhm', 'mm-hm''huh', 'ha']
+filler_words = ['um', 'uh', 'mm', 'hm', 'ooh', 'woo', 'mhm', 'mm-hm', 'huh', 'ha']
 
 pre_cardinal = ['N', 'E', 'S', 'W', 'NE', 'NW', 'SE', 'SW']
 post_cardinal = ['North', 'East', 'South', 'West', 'Northeast', 'Northwest', 'Southeast', 'Southwest']
 
-pre_list = ['cuz', 'ok', 'o', 'till', 'yup', 'imma', 'mister', 'doctor',
-            'gonna', 'tryna',
-           'carryout', 'sawmill', 'highschool', 'worldclass',
-           'saint', 'street', 'state',
-            'avenue', 'road', 'boulevard',
+pre_list = ['cuz', 'ok', 'o', 'till', 'yup', 'ima', 'mister', 'dr',
+           'carryout', 'sawmill', 'highschool', 'worldclass', 'rd', 'blvd',
            'theatre', 'neighbour', 'neighbours', 'neighbourhood', 'programme']
-post_list = ['cause', 'okay', 'oh', 'til', 'yep', 'ima', 'mr', 'dr',
-             'going to', 'trying to',
-            'carry out', 'saw mill', 'high school', 'world class',
-             'st', 'st', 'st',
-             'ave', 'rd', 'blvd',
+post_list = ['cause', 'okay', 'oh', 'til', 'yep', 'imma', 'mr', 'doctor',
+            'carry out', 'saw mill', 'high school', 'world class', 'road', 'boulevard',
              'theater', 'neighbor', 'neighbors', 'neighborhood', 'program']
 
 def clean_coraal_lambda(text):
@@ -55,6 +49,19 @@ def clean_coraal_lambda(text):
 
     # remove nonlinguistic markers
     text = remove_markers(text, ['<>', '()', '{}'])
+
+    return text
+
+def clean_voc_lambda(text):
+    '''
+    Applies several important transformations to raw VoC transcripts.
+    '''
+
+    text = re.sub('\(', '',text) # remove brackets from text
+    text = re.sub('\)', '',text) # remove brackets from text
+
+    # remove nonlinguistic markers
+    text = remove_markers(text, ['[]', '{}'])
 
     return text
 
@@ -106,7 +113,7 @@ def clean_within_all(text):
     text = ' '.join(split_words_dir)
 
     # deal with state abbreviations
-    text = fix_state_abbrevs(text)
+    #text = fix_state_abbrevs(text)
     text = text.lower()
 
     # update spacing in certain spellings
@@ -116,9 +123,11 @@ def clean_within_all(text):
         text = re.sub(spacing_list_pre[i], spacing_list_post[i],''.join(text))
 
     # remove filler words and swear words
-    remove_words = swear_words + filler_words
-    resultwords  = [word for word in text.split() if word not in remove_words]
-    result = ' '.join(resultwords)
+    #remove_words = swear_words + filler_words
+    #resultwords  = [word for word in text.split() if word not in remove_words]
+    #result = ' '.join(resultwords)
+
+    result = text
 
     return result
 

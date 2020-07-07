@@ -9,6 +9,7 @@ import re
 import csv
 import xml.etree.ElementTree as ET
 import re
+from process_transcriptions import *
 
 AUDIO_DIRS = ['data_voc']
 
@@ -37,8 +38,16 @@ def write_files(identifier, num_segments, result, curr_text):
     with open(result_text_path, "w") as txt_file:
         txt_file.write(' '.join(curr_text))
 
+    #WRITE ADJUSTED TEXT
+    result_text_path = path.join(RESULT_DIR + "/txt", 'voc_' + str(identifier) + '_part_{}'.format(num_segments) + '.txt')
+    cleaned_text = clean_voc_lambda(groundtruth_text)
+    cleaned_text = clean_within_all(cleaned_text)
+    cleaned_text = cleaned_text.upper()
+    with open(result_text_path, "w") as txt_file:
+        txt_file.write(cleaned_text)
+
     writer = csv.writer(open(MANIFEST_FILE, "a"))
-    writer.writerow([result_path, result_text_path, groundtruth_text, len(result)/1000])
+    writer.writerow([result_path, result_text_path, groundtruth_text, cleaned_text, len(result)/1000])
 
 def find_interviewee(root, transcript):
 	components = transcript.split("/")[1].split(".")[0].split("_")
@@ -208,7 +217,7 @@ def process_all_audio_files(dir_list):
 if __name__ == '__main__':
     #init manifest file
     np.savetxt(MANIFEST_FILE, np.array(
-        ['wav_file,txt_file,groundtruth_text,duration']), fmt="%s", delimiter=",")
+        ['wav_file,txt_file,groundtruth_text,cleaned_text,duration']), fmt="%s", delimiter=",")
     #init ids file
     np.savetxt(ID_FILE, np.array(
         ['id,first,last']), fmt="%s", delimiter=",")
