@@ -206,11 +206,6 @@ if __name__ == '__main__':
                       (epoch + 1), (i + 1), len(train_sampler), batch_time=batch_time, loss=losses))
             torch.empty
 
-            if i % 100 == 0:
-                with open(loss_log_file, "a") as file:
-                    file.write("{},{}, {},{},{}\n".format(
-                        epoch, i, losses.avg, float('nan'), float('nan')))
-
         avg_loss /= len(train_sampler)
         epoch_time = time.time() - start_epoch_time
         print('Training Summary Epoch: [{0}]\t'
