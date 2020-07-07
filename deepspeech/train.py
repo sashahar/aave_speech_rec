@@ -24,7 +24,7 @@ parser.add_argument('--epochs', default=70, type=int,
                     help='Number of training epochs')
 parser.add_argument('--cuda', dest='cuda', action='store_true',
                     help='Use cuda to train model')
-parser.add_argument('--lr', '--learning-rate', default=1e-2,
+parser.add_argument('--lr', '--learning-rate', default=1e-3,
                     type=float, help='initial learning rate')
 parser.add_argument('--learning-anneal', default=1.1, type=float,
                     help='Annealing applied to learning rate every epoch')
