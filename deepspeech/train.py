@@ -145,6 +145,8 @@ if __name__ == '__main__':
         os.mkdir(LOG_DIR)
     loss_log_file = LOG_DIR + "/" + LOG_FILE + "_loss.csv"
     cer_wer_log_file = LOG_DIR + "/" + LOG_FILE + "_er.csv"
+    #TEMPORARY
+    temp_val_cer_wer_log_file = LOG_DIR + "/" + LOG_FILE + "_temp_val_er.csv"
     save_word_preds_file_train = LOG_DIR + "/" + SAVE_TXT_FILE + "_train.csv"
     save_word_preds_file_val = LOG_DIR + "/" + SAVE_TXT_FILE + "_val.csv"
     save_word_preds_file_train_best = LOG_DIR + "/" + SAVE_TXT_FILE + "_train_best.csv"
@@ -156,6 +158,9 @@ if __name__ == '__main__':
         ['epoch,loss']), fmt="%s", delimiter=",")
     np.savetxt(cer_wer_log_file, np.array(
         ['epoch,loss,train_cer, train_wer, dev_cer,dev_wer']), fmt="%s", delimiter=",")
+    #TEMPORARY
+    np.savetxt(temp_val_cer_wer_log_file, np.array(
+        ['epoch,loss,dev_cer,dev_wer']), fmt="%s", delimiter=",")
     np.savetxt(save_model_memory_usage, np.array(
         ['epoch,iter, memory_allocated, max_memory_allocated, max_input_len']), fmt="%s", delimiter=",")
 
@@ -216,6 +221,14 @@ if __name__ == '__main__':
 
         with open(loss_log_file, "a") as file:
             file.write("{},{}\n".format(epoch, avg_loss))
+
+        #TEMPORARY: Log validation CER,WER every epoch
+        if True:
+            wer, cer, output_data, output_text = evaluate(
+                test_loader=val_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
+            with open(temp_val_cer_wer_log_file, "a") as file:
+                file.write("{},{},{},{}\n".format(
+                    epoch, avg_loss, cer, wer))
 
         if epoch % 10 == 0:
             with torch.no_grad():
