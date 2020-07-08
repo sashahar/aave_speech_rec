@@ -177,10 +177,6 @@ if __name__ == '__main__':
             out = out.transpose(0, 1)  # TxNxH
             loss = ctc_loss(out, targets, output_sizes,
                             target_sizes).to(device)
-            print("Out:")
-            print(out)
-            print("Targets:")
-            print(targets)
             optimizer.zero_grad()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 350)
