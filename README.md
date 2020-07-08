@@ -5,15 +5,19 @@ Summary of file structure and usage:
 
 ## Deepspeech
 
+**train.py**
+the main script for training a DeepSpeech model.  Specify a train and test manifest as command line arguments.  Example command:
+`python3 train.py --checkpoint --train-manifest ../manifests/train_1000_coraal.csv  --val-manifest ../manifests/val_1000_coraal.csv --batch-size 10  --epochs 20  --cuda  --id v_1`
+
 ## Manifests
 Folder containing manifest files for model training.  Each manifest is a CSV file where one line contains the file path to a wav_file and corresponding txt_file containing a transcription.  The Deepspeech model reads from these manifests in roder to characterize the training and validation datasets.  i.e. to craft a small training dataset of 1000 examples requires creating a manifest with 1000 rows.
 
 Relevant files:
 
-** coraal_manifest.csv **
+**coraal_manifest.csv**
 Comprehensive list of all CORAAL trianing examples
 
-** voc_manifest.csv **
+**voc_manifest.csv**
 Comprehensive list of all VOC training examples
 
 ### process_data_coraal.py
