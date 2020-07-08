@@ -154,9 +154,7 @@ if __name__ == '__main__':
         ['epoch,loss']), fmt="%s", delimiter=",")
     np.savetxt(cer_wer_log_file, np.array(
         ['epoch,loss,train_cer, train_wer, dev_cer,dev_wer']), fmt="%s", delimiter=",")
-    np.savetxt(save_model_memory_usage, np.array(
-        ['epoch,iter, memory_allocated, max_memory_allocated, max_input_len']), fmt="%s", delimiter=",")
-
+    
     for epoch in range(start_epoch, args.epochs):
         model.train()
         end = time.time()
