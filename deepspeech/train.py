@@ -26,8 +26,8 @@ parser.add_argument('--cuda', dest='cuda', action='store_true',
                     help='Use cuda to train model')
 parser.add_argument('--lr', '--learning-rate', default=1e-3,
                     type=float, help='initial learning rate')
-parser.add_argument('--learning-anneal', default=1.1, type=float,
-                    help='Annealing applied to learning rate every epoch')
+parser.add_argument('--learning-anneal', default=1.0, type=float,
+                    help='Annealing applied to learning rate every epoch.  Default is no annealing')
 parser.add_argument(
     '--id', type=str, help='Unique identifier for current training operation')
 parser.add_argument('--continue-from', default='',
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     print('using device: {}'.format(device))
 
     LOG_DIR += args.id
-    print("pretrained: ", args.pretrained)
+    print("using pretrained model: ", args.pretrained)
 
     start_epoch, start_iter, optim_state = 0, 0, None
     if args.continue_from:  # Starting from previous model
@@ -106,7 +106,6 @@ if __name__ == '__main__':
     else:
         model = DeepSpeech()
     print("number of params: ", DeepSpeech.get_param_size(model))
-    print("start iter: ", start_iter)
     model = model.to(device)
 
     with open(args.char_vocab_path) as label_file:
@@ -196,14 +195,6 @@ if __name__ == '__main__':
 
             batch_time.update(time.time() - end)
             end = time.time()
-            # except:
-            #     fp = LOG_DIR + "/" + "ERROR_DUMP" + ".txt"
-            #     print("Encountered CUDA memory Error, saving dump to: {}".format(fp))
-            #     with open(fp, "w") as file:
-            #         file.write("memory summary: " + str(torch.cuda.memory_summary()))
-            #     print(torch.cuda.memory_summary())
-
-
 
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
