@@ -31,45 +31,45 @@ def evaluate(test_loader, device, model, decoder, target_decoder, save_output=Fa
     for i, (data) in tqdm(enumerate(test_loader), total=len(test_loader)):
 
         #wrap in try/catch statement
-        try:
-            inputs, targets, input_sizes, target_sizes, filenames = data
+        #try:
+        inputs, targets, input_sizes, target_sizes, filenames = data
 
-            inputs = inputs.to(device)
-            targets = targets.to(device)
+        inputs = inputs.to(device)
+        targets = targets.to(device)
 
-            # unflatten targets
-            split_targets = []
-            offset = 0
-            for size in target_sizes:
-                split_targets.append(targets[offset:offset + size])
-                offset += size
+        # unflatten targets
+        split_targets = []
+        offset = 0
+        for size in target_sizes:
+            split_targets.append(targets[offset:offset + size])
+            offset += size
 
-            out, output_sizes = model(inputs, input_sizes)
+        out, output_sizes = model(inputs, input_sizes)
 
-            decoded_output, _ = decoder.decode(out, output_sizes)
-            #print(decoded_output)
-            target_strings = target_decoder.convert_to_strings(split_targets)
-            #print(target_strings)
+        decoded_output, _ = decoder.decode(out, output_sizes)
+        #print(decoded_output)
+        target_strings = target_decoder.convert_to_strings(split_targets)
+        #print(target_strings)
 
-            if save_output is not None:
-                # add output to data array, and continue
-                output_data.append((out.cpu().numpy(), output_sizes.numpy(), target_strings))
-                #adjustment: add decoded output to list in format ("model output", "target output")
-                for j in range(len(target_strings)):
-                    curr_file = filenames[j].split("/")[-1]
-                    output_text.append("{},{},{}".format(curr_file, decoded_output[j][0], target_strings[j][0]))
+        if save_output is not None:
+            # add output to data array, and continue
+            output_data.append((out.cpu().numpy(), output_sizes.numpy(), target_strings))
+            #adjustment: add decoded output to list in format ("model output", "target output")
+            for j in range(len(target_strings)):
+                curr_file = filenames[j].split("/")[-1]
+                output_text.append("{},{},{}".format(curr_file, decoded_output[j][0], target_strings[j][0]))
 
-            for x in range(len(target_strings)):
-                transcript, reference = decoded_output[x][0], target_strings[x][0]
-                wer_inst = decoder.wer(transcript, reference)
-                cer_inst = decoder.cer(transcript, reference)
-                total_wer += wer_inst
-                total_cer += cer_inst
-                num_tokens += len(reference.split())
-                num_chars += len(reference.replace(' ', ''))
-        except:
-            print("Encountered CUDA memory error")
-            print(torch.cuda.memory_summary())
+        for x in range(len(target_strings)):
+            transcript, reference = decoded_output[x][0], target_strings[x][0]
+            wer_inst = decoder.wer(transcript, reference)
+            cer_inst = decoder.cer(transcript, reference)
+            total_wer += wer_inst
+            total_cer += cer_inst
+            num_tokens += len(reference.split())
+            num_chars += len(reference.replace(' ', ''))
+        # except:
+        #     print("Encountered CUDA memory error")
+        #     print(torch.cuda.memory_summary())
 
     wer = float(total_wer) / num_tokens
     cer = float(total_cer) / num_chars
