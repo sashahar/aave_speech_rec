@@ -171,7 +171,7 @@ if __name__ == '__main__':
         avg_loss = 0
 
         for i, (data) in enumerate(train_loader, start=start_iter):
-            if i == 10: #len(train_sampler):
+            if i == len(train_sampler):
                 break
 
             #CLEAR CACHE
@@ -223,7 +223,7 @@ if __name__ == '__main__':
             file.write("{},{}\n".format(epoch, avg_loss))
 
         #TEMPORARY: Log validation CER,WER every epoch
-        if True:
+        if (epoch % 2 == 0) and (epoch % 10 != 0):
             wer, cer, output_data, output_text = evaluate(
                 test_loader=val_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
             with open(temp_val_cer_wer_log_file, "a") as file:
