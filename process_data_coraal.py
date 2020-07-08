@@ -24,32 +24,32 @@ from process_transcriptions import *
 
 AUDIO_DIRS = [
 #DC DATA
-# 'data/DCB_audio_part01_2018.10.06','data/DCB_audio_part02_2018.10.06',\
-# 'data/DCB_audio_part03_2018.10.06','data/DCB_audio_part04_2018.10.06',\
-# 'data/DCB_audio_part05_2018.10.06','data/DCB_audio_part06_2018.10.06',\
-# 'data/DCB_audio_part07_2018.10.06','data/DCB_audio_part08_2018.10.06',\
-# 'data/DCB_audio_part09_2018.10.06','data/DCB_audio_part10_2018.10.06',\
-# 'data/DCB_audio_part11_2018.10.06','data/DCB_audio_part12_2018.10.06',\
-# 'data/DCB_audio_part13_2018.10.06','data/DCB_audio_part14_2018.10.06',\
+'data/DCB/DCB_audio_part01_2018.10.06','data/DCB/DCB_audio_part02_2018.10.06',\
+'data/DCB/DCB_audio_part03_2018.10.06','data/DCB/DCB_audio_part04_2018.10.06',\
+'data/DCB/DCB_audio_part05_2018.10.06','data/DCB/DCB_audio_part06_2018.10.06',\
+'data/DCB/DCB_audio_part07_2018.10.06','data/DCB/DCB_audio_part08_2018.10.06',\
+'data/DCB/DCB_audio_part09_2018.10.06','data/DCB/DCB_audio_part10_2018.10.06',\
+'data/DCB/DCB_audio_part11_2018.10.06','data/DCB/DCB_audio_part12_2018.10.06',\
+'data/DCB/DCB_audio_part13_2018.10.06','data/DCB/DCB_audio_part14_2018.10.06',\
 #ROC DATA
-# 'data/ROC_audio_part01_2020.05','data/ROC_audio_part02_2020.05',\
-# 'data/ROC_audio_part03_2020.05','data/ROC_audio_part04_2020.05',\
-# 'data/ROC_audio_part05_2020.05',\
+# 'data/ROC/ROC_audio_part01_2020.05','data/ROC/ROC_audio_part02_2020.05',\
+# 'data/ROC/ROC_audio_part03_2020.05','data/ROC/ROC_audio_part04_2020.05',\
+# 'data/ROC/ROC_audio_part05_2020.05',\
 # #ATL DATA
-'data/ATL/ATL_audio_part01_2020.05','data/ATL/ATL_audio_part02_2020.05',\
-'data/ATL/ATL_audio_part03_2020.05','data/ATL/ATL_audio_part04_2020.05',\
+# 'data/ATL/ATL_audio_part01_2020.05','data/ATL/ATL_audio_part02_2020.05',\
+# 'data/ATL/ATL_audio_part03_2020.05','data/ATL/ATL_audio_part04_2020.05',\
 # #PRV DATA
-# 'data/PRV_audio_part01_2018.10.06','data/PRV_audio_part02_2018.10.06',\
-# 'data/PRV_audio_part03_2018.10.06','data/PRV_audio_part04_2018.10.06'
+# 'data/PRV/PRV_audio_part01_2018.10.06','data/PRV/PRV_audio_part02_2018.10.06',\
+# 'data/PRV/PRV_audio_part03_2018.10.06','data/PRV/PRV_audio_part04_2018.10.06'
 ]
 
 # AUDIO_DIRS = ['data/PRV_audio_part01_2018.10.06','data/PRV_audio_part02_2018.10.06',\
 #     'data/PRV_audio_part03_2018.10.06','data/PRV_audio_part04_2018.10.06']
 
-TXT_DIR = 'data/ATL/ATL_textfiles_2020.05' #'data/ROC_textfiles_2020.05'
-RESULT_DIR = 'data_processed_ATL'
-MANIFEST_FILE = 'ATL_manifest.csv'
-METADATA_FILE = 'data/ATL/ATL_metadata_2020.05.txt'
+TXT_DIR = 'data/DCB/DCB_textfiles_2018.10.06' #'data/ROC_textfiles_2020.05'
+RESULT_DIR = 'data_processed_DCB'
+MANIFEST_FILE = 'DCB_manifest.csv'
+METADATA_FILE = 'data/DCB/DCB_metadata_2018.10.06.txt'
 MIN_AUDIO_LENGTH = 5000
 MAX_AUDIO_LENGTH = 20000 #20 seconds max length for audio segment
 
@@ -100,7 +100,7 @@ def write_files(filepath, num_segments, result, curr_text):
     #WRITE ROW IN MANIFEST FILE
     age, gender = get_metadata(filepath)
     writer = csv.writer(open(MANIFEST_FILE, "a"))
-    writer.writerow([result_path, result_text_path, groundtruth_text, len(result)/1000, age, gender])
+    writer.writerow([result_path, result_text_path, ' '.join(curr_text), groundtruth_text, len(result)/1000, age, gender])
 
 def is_useful_content(str):
     x = re.search("\(pause [0-9]\.[0-9]{2}\)", str)
@@ -162,5 +162,5 @@ def process_all_audio_files(dir_list):
 if __name__ == '__main__':
     #init manifest file
     np.savetxt(MANIFEST_FILE, np.array(
-        ['wav_file,txt_file,groundtruth_text,duration,age,gender']), fmt="%s", delimiter=",")
+        ['wav_file,txt_file,groundtruth_text_raw, groundtruth_text_train ,duration,age,gender']), fmt="%s", delimiter=",")
     process_all_audio_files(AUDIO_DIRS)
