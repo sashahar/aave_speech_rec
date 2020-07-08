@@ -42,6 +42,7 @@ def _collate_fn(batch):
         example = batch[i]
         spectrogram = example[0]
         transcript = example[1]
+        print(transcript)
         files.append(example[2])
         seq_length = spectrogram.size(1)
         inputs[i][0].narrow(1, 0, seq_length).copy_(spectrogram)
