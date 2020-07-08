@@ -42,7 +42,6 @@ def _collate_fn(batch):
         example = batch[i]
         spectrogram = example[0]
         transcript = example[1]
-        print(transcript)
         files.append(example[2])
         seq_length = spectrogram.size(1)
         inputs[i][0].narrow(1, 0, seq_length).copy_(spectrogram)
@@ -59,6 +58,7 @@ class SpectrogramDataset(Dataset):
         with open(manifest_filepath) as f:
             data_filepaths = f.readlines()
         data_filepaths = [x.strip().split(',') for x in data_filepaths]
+        print(data_filepaths)
         self.data_filepaths = data_filepaths
         self.size = len(data_filepaths)
         self.char2ind = self.create_char2ind_map(char_vocab_path)
