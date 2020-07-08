@@ -53,7 +53,7 @@ def evaluate(test_loader, device, model, decoder, target_decoder, save_output=Fa
 
         if save_output is not None:
             # add output to data array, and continue
-            output_data.append((out.cpu().numpy(), output_sizes.numpy(), target_strings))
+            output_data.append((out.detach().cpu().numpy(), output_sizes.detach().numpy(), target_strings))
             #adjustment: add decoded output to list in format ("model output", "target output")
             for j in range(len(target_strings)):
                 curr_file = filenames[j].split("/")[-1]
