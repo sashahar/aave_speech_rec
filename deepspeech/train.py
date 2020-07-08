@@ -223,12 +223,15 @@ if __name__ == '__main__':
             file.write("{},{}\n".format(epoch, avg_loss))
 
         #TEMPORARY: Log validation CER,WER every epoch
+        print("here")
         if True:
             wer, cer, output_data, output_text = evaluate(
                 test_loader=val_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
             with open(temp_val_cer_wer_log_file, "a") as file:
                 file.write("{},{},{},{}\n".format(
                     epoch, avg_loss, cer, wer))
+
+        print("there")
 
         if epoch % 10 == 0:
             with torch.no_grad():
