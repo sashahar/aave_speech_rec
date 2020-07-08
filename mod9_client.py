@@ -99,37 +99,6 @@ CHUNK_SIZE = 160                # enable latency as low as 0.01s at 8kHz
 EOF_MARKER = 'END-OF-FILE'      # configurable sequence that's unlikely to occur in PCM audio data
 
 
-def recv_response(sock, stream):
-    """
-    Receive JSON-formatted single-line messages from the server and write to stdout.
-    We do some basic checking of the expected message format and set this thread's status.
-    """
-    # Use this thread object's namespace to convey this request's status to other threads.
-    thread = threading.current_thread()
-    thread._status = None
-
-    # Use a file-like object, for convenience of reading lines.
-    sockfile = sock.makefile(mode='r')
-
-    while True:
-        # Read a line and print it to stdout.
-        try:
-            line = sockfile.readline()
-        except Exception:
-            logging.exception('Failed to receive expected line from server.')
-            sys.exit(1)
-        if not line:
-            break
-        print(line, flush=True, end='')
-
-        try:
-            response = json.loads(line)
-            if 'status' in response:
-                thread._status = response['status']
-        except Exception:
-            logging.exception('Failed to parse the expected JSON response.')
-            sys.exit(1)
-
 def thread_routine(args_tuple):
     options_json, filename = args_tuple
     print(filename)

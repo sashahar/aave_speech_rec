@@ -9,19 +9,6 @@ import re
 import csv
 from process_transcriptions import *
 
-# AUDIO_DIRS = ['data/ATL_audio_part01_2020.05','data/ATL_audio_part02_2020.05',\
-#     'data/ATL_audio_part03_2020.05','data/ATL_audio_part04_2020.05']
-
-# AUDIO_DIRS = ['data/DCA_audio_part02_2018.10.06', \
-#     'data/DCA_audio_part03_2018.10.06', 'data/DCA_audio_part04_2018.10.06', \
-#     'data/DCA_audio_part05_2018.10.06','data/DCA_audio_part06_2018.10.06', \
-#     'data/DCA_audio_part07_2018.10.06', 'data/DCA_audio_part08_2018.10.06' \
-#     'data/DCA_audio_part09_2018.10.06', 'data/DCA_audio_part10_2018.10.06'],\
-
-# AUDIO_DIRS = ['data/ROC_audio_part01_2020.05','data/ROC_audio_part02_2020.05',\
-#     'data/ROC_audio_part03_2020.05','data/ROC_audio_part04_2020.05',\
-#     'data/ROC_audio_part05_2020.05']
-
 AUDIO_DIRS = [
 #DC DATA
 'data/DCB/DCB_audio_part01_2018.10.06','data/DCB/DCB_audio_part02_2018.10.06',\
@@ -50,10 +37,14 @@ TXT_DIR = 'data/DCB/DCB_textfiles_2018.10.06' #'data/ROC_textfiles_2020.05'
 RESULT_DIR = 'data_processed_DCB'
 MANIFEST_FILE = 'DCB_manifest.csv'
 METADATA_FILE = 'data/DCB/DCB_metadata_2018.10.06.txt'
-MIN_AUDIO_LENGTH = 5000
-MAX_AUDIO_LENGTH = 20000 #20 seconds max length for audio segment
+MIN_AUDIO_LENGTH = 5000 #unit millisections: 5 seconds is min length for audio segment
+MAX_AUDIO_LENGTH = 20000 #unit millisections: 20 seconds max length for audio segment
 
 def is_interviewer(str):
+    '''
+    determines if speaker is the interviwer by searching for string 'int'
+    this signals the interviewer in the marked up transcripts.
+    '''
     return str.find("int") != -1
 
 def include_file(filename):
@@ -75,6 +66,16 @@ def get_metadata(filepath):
     return age, gender
 
 def write_files(filepath, num_segments, result, curr_text):
+    '''
+    Takes a list of audio segments and corresponding transcripts
+    and writes them to the RESULT_DIR.
+    Args:
+    filepath: filename of original WAV file
+    num_segments:
+    result: AudioSegment to write to new WAV file
+    curr_text: text transcript corresponding to the utterances in result.
+
+    '''
     #WRITE_WAV_FILE
     result_path = path.join(RESULT_DIR + "/wav", \
         filepath + '_part_{}'.format(num_segments) + '.wav')
@@ -109,9 +110,13 @@ def is_useful_content(str):
     return True
 
 
-#TODO: this function will eventually be a thread routine.
-#good candidate for multiprocessing because of letency of reading files
 def process_single_audio_file(root_dir, filename):
+    '''
+    Expects file at path <root_dir>/<filename> to be a wav file.
+    Breaks this file into chunks approx 20 seconds in length.
+    Excludes utterances from the interviewer.  Writes resulting snippets
+    to RESULT_DIR/wav
+    '''
     #open audio file
     audio_filepath = path.join(root_dir, filename + '.wav')
     audio_segment = AudioSegment.from_wav(audio_filepath)
@@ -141,12 +146,6 @@ def process_single_audio_file(root_dir, filename):
             total_time = 0
             result = AudioSegment.silent(duration=0)
 
-# np.savetxt(MANIFEST_FILE, np.array(
-#     ['wav_file,txt_file,groundtruth_text,duration']), fmt="%s", delimiter=",")
-# FILE_PATH = 'DCA_se1_ag1_f_01_1'
-# process_single_audio_file(AUDIO_DIRS[0], FILE_PATH)
-
-#TODO: limit to ag groups excluding age group 1
 def process_all_audio_files(dir_list):
     for dir in dir_list:
         for file in os.listdir(dir):
