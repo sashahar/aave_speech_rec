@@ -72,12 +72,6 @@ class SpectrogramDataset(Dataset):
         char2ind = dict([(characters[i], i) for i in range(len(characters))])
         return char2ind
 
-    def clean_coraal_transcript(self, text):
-        #convert to upper case
-        text = clean_coraal_lambda(text)
-        text = clean_within_all_lambda(text)
-        return text
-
     #Takes in an audio path and returns a normalized array representing the audio
     def load_audio(self, audio_path):
         #returns audio time series with length duration*sample_rate
@@ -112,6 +106,7 @@ class SpectrogramDataset(Dataset):
     #Takes in an audio path and returns a spectrogram
     #Spectrogram is a num_seconds * max_frequency list of lists
     def parse_audio(self, audio_path):
+        print(audio_path)
         sound = self.load_audio(audio_path)
         spect = self.get_spectrogram(sound)
         return spect
