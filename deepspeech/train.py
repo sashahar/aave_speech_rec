@@ -180,8 +180,12 @@ if __name__ == '__main__':
 
             out, output_sizes = model(inputs, input_sizes)
             out = out.transpose(0, 1)  # TxNxH
-            loss = ctc_loss(out, targets, output_sizes,
-                            target_sizes).to(device)
+
+            #Work around on CTCLoss bug
+            #https://github.com/pytorch/pytorch/issues/22234
+            with torch.backends.cudnn.flags(enabled=False):
+                loss = ctc_loss(out, targets, output_sizes,
+                                target_sizes).to(device)
             optimizer.zero_grad()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 350)

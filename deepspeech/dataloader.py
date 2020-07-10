@@ -105,7 +105,6 @@ class SpectrogramDataset(Dataset):
     #Takes in an audio path and returns a spectrogram
     #Spectrogram is a num_seconds * max_frequency list of lists
     def parse_audio(self, audio_path):
-        print(audio_path)
         sound = self.load_audio(audio_path)
         spect = self.get_spectrogram(sound)
         return spect
