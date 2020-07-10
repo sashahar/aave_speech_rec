@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     #TEMPORARY
     np.savetxt(temp_debug_file, np.array(
-        ['epoch,iter,loss,file1,file2']), fmt="%s", delimiter=",")
+        ['epoch,iter,loss,file']), fmt="%s", delimiter=",")
     np.savetxt(loss_log_file, np.array(
         ['epoch,loss']), fmt="%s", delimiter=",")
     np.savetxt(cer_wer_log_file, np.array(
@@ -195,8 +195,8 @@ if __name__ == '__main__':
             loss_num = float(loss.detach())
             if loss_num > 100:
                 with open(temp_debug_file, "a") as file:
-                    file.write("{},{},{},{},{}\n".format(epoch, i, loss_num, \
-                        filenames[0], filenames[1]))
+                    file.write("{},{},{},{}\n".format(epoch, i, loss_num, \
+                        filenames[0])
 
             avg_loss += float(loss.detach())
             losses.update(float(loss.detach()), inputs.size(0))
