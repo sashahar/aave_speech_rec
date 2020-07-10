@@ -58,7 +58,6 @@ class SpectrogramDataset(Dataset):
         with open(manifest_filepath) as f:
             data_filepaths = f.readlines()
         data_filepaths = [x.strip().split(',') for x in data_filepaths]
-        print(data_filepaths)
         self.data_filepaths = data_filepaths
         self.size = len(data_filepaths)
         self.char2ind = self.create_char2ind_map(char_vocab_path)
