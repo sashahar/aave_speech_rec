@@ -195,8 +195,7 @@ if __name__ == '__main__':
             loss_num = float(loss.detach())
             if loss_num > 100:
                 with open(temp_debug_file, "a") as file:
-                    file.write("{},{},{},{}\n".format(epoch, i, loss_num, \
-                        filenames[0])
+                    file.write("{},{},{},{}\n".format(epoch, i, loss_num, filenames[0]))
 
             avg_loss += float(loss.detach())
             losses.update(float(loss.detach()), inputs.size(0))
