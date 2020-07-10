@@ -174,7 +174,6 @@ if __name__ == '__main__':
             torch.cuda.empty_cache()
             # try:
             inputs, targets, input_sizes, target_sizes, filenames = data
-            print(filenames)
 
             inputs = inputs.to(device)
             targets = targets.to(device)
@@ -189,9 +188,10 @@ if __name__ == '__main__':
             optimizer.step()
 
             #TEMPORARY: Log High Losses to examine examples:
-            if loss.detach() > 100:
+            loss_num = float(loss.detach())
+            if loss_num > 100:
                 with open(temp_debug_file, "a") as file:
-                    file.write("{},{},{},{},{}\n".format(epoch, i, float(loss.detach()), \
+                    file.write("{},{},{},{},{}\n".format(epoch, i, loss_num, \
                         filenames[0], filenames[1]))
 
             avg_loss += float(loss.detach())
