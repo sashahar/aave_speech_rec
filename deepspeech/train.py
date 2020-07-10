@@ -174,6 +174,7 @@ if __name__ == '__main__':
             torch.cuda.empty_cache()
             # try:
             inputs, targets, input_sizes, target_sizes, filenames = data
+            print(filenames)
 
             inputs = inputs.to(device)
             targets = targets.to(device)
