@@ -191,11 +191,13 @@ if __name__ == '__main__':
     else:
         decoder = BeamCTCDecoder(characters)
 
+    target_decoder = GreedyDecoder(characters)
+
     test_dataset = SpectrogramDataset(manifest_filepath=args.test_manifest, char_vocab_path=args.char_vocab_path)
     test_sampler = BucketingSampler(test_dataset, batch_size=args.batch_size)
     test_loader = AudioDataLoader(test_dataset, batch_sampler=test_sampler)
 
-    wer, cer, generic_wer, generic_cer, accent_wer, accent_cer, output_data, output_text = evaluate(test_loader=test_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
+    wer, cer, generic_wer, generic_cer, accent_wer, accent_cer, output_data, output_text = evaluate(test_loader=test_loader, device=device, model=model, decoder=decoder, target_decoder=target_decoder)
 
     print('Test Summary \t'
           'Average WER {wer:.3f}\t'
