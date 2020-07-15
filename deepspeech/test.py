@@ -18,6 +18,8 @@ parser.add_argument('--model-path', default='models/deepspeech_final.pth', help=
 parser.add_argument('--cuda', action="store_true", help='Use cuda')
 parser.add_argument('--id', type=str, help='Unique identifier')
 parser.add_argument('--char-vocab-path', default="character_vocab.json", help='Contains all characters for transcription')
+parser.add_argument('--beam-decode', action='store_true',
+                    help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 
 LOG_DIR = 'logs'
 SAVE_TXT_FILE = 'word_preds'
@@ -183,13 +185,17 @@ if __name__ == '__main__':
 
     with open(args.char_vocab_path) as label_file:
         characters = str(''.join(json.load(label_file)))
-    decoder = GreedyDecoder(characters)
+
+    if not args.beam_decode:
+        decoder = GreedyDecoder(characters)
+    else:
+        decoder = BeamCTCDecoder(characters)
 
     test_dataset = SpectrogramDataset(manifest_filepath=args.test_manifest, char_vocab_path=args.char_vocab_path)
     test_sampler = BucketingSampler(test_dataset, batch_size=args.batch_size)
     test_loader = AudioDataLoader(test_dataset, batch_sampler=test_sampler)
 
-    wer, cer, generic_wer, generic_cer, accent_wer, accent_cer, output_data, output_text = evaluate_adversarial(test_loader=test_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
+    wer, cer, generic_wer, generic_cer, accent_wer, accent_cer, output_data, output_text = evaluate(test_loader=test_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
 
     print('Test Summary \t'
           'Average WER {wer:.3f}\t'
