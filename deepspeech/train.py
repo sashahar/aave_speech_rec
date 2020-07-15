@@ -40,7 +40,7 @@ parser.add_argument('--checkpoint', dest='checkpoint',
                     action='store_true', help='Checkpoint each epoch')
 parser.add_argument('--checkpoint-best', dest='checkpointbest',
                     action='store_true', help='Checkpoint best model')
-parser.add_argument('--greedy-decode', action='store_true',
+parser.add_argument('--beam-decode', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 
 MODEL_SAVE_DIR = 'models'
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     with open(args.char_vocab_path) as label_file:
         characters = str(''.join(json.load(label_file)))
 
-    if args.greedy_decode:
+    if not args.beam_decode:
         decoder = GreedyDecoder(characters)
     else:
         decoder = BeamCTCDecoder(characters)
