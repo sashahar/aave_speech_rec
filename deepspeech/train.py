@@ -8,7 +8,7 @@ import numpy as np
 
 from model import DeepSpeech
 from dataloader import AudioDataLoader, SpectrogramDataset, BucketingSampler
-from decoder import GreedyDecoder
+from decoder import GreedyDecoder, BeamCTCDecoder
 from test import evaluate
 
 parser = argparse.ArgumentParser(description='DeepSpeech training')

@@ -6,7 +6,7 @@ from tqdm import tqdm
 import json
 
 from dataloader import AudioDataLoader, SpectrogramDataset, BucketingSampler
-from decoder import GreedyDecoder
+from decoder import GreedyDecoder, BeamCTCDecoder
 from model import DeepSpeech
 
 parser = argparse.ArgumentParser(description='DeepSpeech testing')
