@@ -20,6 +20,8 @@ parser.add_argument('--id', type=str, help='Unique identifier')
 parser.add_argument('--char-vocab-path', default="character_vocab.json", help='Contains all characters for transcription')
 parser.add_argument('--beam-decode', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
+parser.add_argument('--adversarial', action='store_true',
+                    help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 
 LOG_DIR = 'logs'
 SAVE_TXT_FILE = 'word_preds'
@@ -197,15 +199,22 @@ if __name__ == '__main__':
     test_sampler = BucketingSampler(test_dataset, batch_size=args.batch_size)
     test_loader = AudioDataLoader(test_dataset, batch_sampler=test_sampler)
 
-    wer, cer, generic_wer, generic_cer, accent_wer, accent_cer, output_data, output_text = evaluate(test_loader=test_loader, device=device, model=model, decoder=decoder, target_decoder=target_decoder)
+    if args.adversarial:
+        wer, cer, generic_wer, generic_cer, accent_wer, accent_cer, output_data, output_text = evaluate_adversarial(test_loader=test_loader, device=device, model=model, decoder=decoder, target_decoder=target_decoder)
+        print('Test Summary \t'
+              'Average WER {wer:.3f}\t'
+              'Average CER {cer:.3f}\t'
+              'Generic WER {generic_wer:.3f}\t'
+              'Generic CER {generic_cer:.3f}\t'
+              'Accent WER {accent_wer:.3f}\t'
+              'Accent CER {accent_cer:.3f}\t'.format(wer=wer, cer=cer, generic_wer=generic_wer, generic_cer=generic_cer, accent_wer=accent_wer, accent_cer=accent_cer))
+    else:
+        wer, cer, output_data, output_text = evaluate(test_loader=test_loader, device=device, model=model, decoder=decoder, target_decoder=target_decoder)
+        print('Test Summary \t'
+              'Average WER {wer:.3f}\t'
+              'Average CER {cer:.3f}\t'.format(wer=wer, cer=cer))
 
-    print('Test Summary \t'
-          'Average WER {wer:.3f}\t'
-          'Average CER {cer:.3f}\t'
-          'Generic WER {generic_wer:.3f}\t'
-          'Generic CER {generic_cer:.3f}\t'
-          'Accent WER {accent_wer:.3f}\t'
-          'Accent CER {accent_cer:.3f}\t'.format(wer=wer, cer=cer, generic_wer=generic_wer, generic_cer=generic_cer, accent_wer=accent_wer, accent_cer=accent_cer))
+
 
     save_word_preds_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_TXT_FILE + "_" + args.id + ".csv"
     np.savetxt(save_word_preds_file, output_text, fmt="%s", delimiter=",")
