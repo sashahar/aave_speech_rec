@@ -96,16 +96,16 @@ if __name__ == '__main__':
     print('using device: {}'.format(device))
 
     LOG_DIR += args.id
-    print("using pretrained model: ", args.pretrained)
 
     start_epoch, start_iter, optim_state = 0, 0, None
     if args.continue_from:  # Starting from previous model
-        model, optim_state, start_epoch, _,_ = load_saved_model(args)
-    if args.pretrained:  # Starting from previous model
-        optim_state = None
-        start_epoch = 0
+        model, optim_state, start_epoch, _, avg_loss = load_saved_model(args)
+        print("previous avg loss is : ", avg_loss)
     else:
         model = DeepSpeech()
+    # if args.pretrained:  # Starting from previous model
+    #     optim_state = None
+    #     start_epoch = 0
     print("number of params: ", DeepSpeech.get_param_size(model))
     model = model.to(device)
 
