@@ -40,6 +40,8 @@ parser.add_argument('--checkpoint', dest='checkpoint',
                     action='store_true', help='Checkpoint each epoch')
 parser.add_argument('--checkpoint-best', dest='checkpointbest',
                     action='store_true', help='Checkpoint best model')
+parser.add_argument('--greedy-decode', action='store_true',
+                    help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 
 MODEL_SAVE_DIR = 'models'
 LOG_DIR = 'logs/'
@@ -109,7 +111,11 @@ if __name__ == '__main__':
 
     with open(args.char_vocab_path) as label_file:
         characters = str(''.join(json.load(label_file)))
-    decoder = GreedyDecoder(characters)
+
+    if args.greedy_decode:
+        decoder = GreedyDecoder(characters)
+    else:
+        decoder = BeamCTCDecoder(characters)
 
     train_dataset = SpectrogramDataset(
         manifest_filepath=args.train_manifest, char_vocab_path=args.char_vocab_path)
