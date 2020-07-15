@@ -147,8 +147,7 @@ if __name__ == '__main__':
 
     if not os.path.exists(LOG_DIR):
         os.mkdir(LOG_DIR)
-    #TEMPORARY
-    temp_debug_file = LOG_DIR + "/" + "high_loss_examples_debug.csv"
+
     loss_log_file = LOG_DIR + "/" + LOG_FILE + "_loss.csv"
     cer_wer_log_file = LOG_DIR + "/" + LOG_FILE + "_er.csv"
     save_word_preds_file_train = LOG_DIR + "/" + SAVE_TXT_FILE + "_train.csv"
@@ -158,13 +157,11 @@ if __name__ == '__main__':
     save_model_params_file_val_best = LOG_DIR + "/" + SAVE_MODEL_PARAMS + "_val_best.pth"
     save_model_params_file_train_best = LOG_DIR + "/" + SAVE_MODEL_PARAMS + "_train_best.pth"
 
-    #TEMPORARY
-    np.savetxt(temp_debug_file, np.array(
-        ['epoch,iter,loss,file']), fmt="%s", delimiter=",")
-    np.savetxt(loss_log_file, np.array(
-        ['epoch,loss']), fmt="%s", delimiter=",")
-    np.savetxt(cer_wer_log_file, np.array(
-        ['epoch,loss,train_cer, train_wer, dev_cer,dev_wer']), fmt="%s", delimiter=",")
+    if not args.continue_from:
+        np.savetxt(loss_log_file, np.array(
+            ['epoch,loss']), fmt="%s", delimiter=",")
+        np.savetxt(cer_wer_log_file, np.array(
+            ['epoch,loss,train_cer, train_wer, dev_cer,dev_wer']), fmt="%s", delimiter=",")
 
     for epoch in range(start_epoch, args.epochs):
         model.train()
@@ -196,12 +193,6 @@ if __name__ == '__main__':
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 350)
             optimizer.step()
-
-            #TEMPORARY: Log High Losses to examine examples:
-            loss_num = float(loss.detach())
-            if loss_num > 100:
-                with open(temp_debug_file, "a") as file:
-                    file.write("{},{},{},{}\n".format(epoch, i, loss_num, filenames[0]))
 
             avg_loss += float(loss.detach())
             losses.update(float(loss.detach()), inputs.size(0))
