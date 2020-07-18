@@ -128,10 +128,10 @@ if __name__ == '__main__':
 
     train_sampler = BucketingSampler(train_dataset, batch_size=args.batch_size)
 
-    train_loader = AudioDataLoader(train_dataset, batch_sampler=train_sampler)
+    train_loader = AudioDataLoader(train_dataset, batch_sampler=train_sampler, num_workers = 10)
     train_eval_loader = AudioDataLoader(
-        train_eval_dataset, batch_size=args.batch_size)
-    val_loader = AudioDataLoader(val_dataset, batch_size=args.batch_size)
+        train_eval_dataset, batch_size=args.batch_size, num_workers = 10)
+    val_loader = AudioDataLoader(val_dataset, batch_size=args.batch_size, num_workers = 10)
 
     lr = args.lr
     print("using learning rate: ", lr)
@@ -222,7 +222,7 @@ if __name__ == '__main__':
         with open(loss_log_file, "a") as file:
             file.write("{},{}\n".format(epoch, avg_loss))
 
-        if epoch % 5 == 0:
+        if (epoch % 3 == 0) or (epoch % 5 == 0):
             with torch.no_grad():
                 train_wer, train_cer, out_train_data, out_train_text = evaluate(test_loader=train_eval_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
                 wer, cer, output_data, output_text = evaluate(
