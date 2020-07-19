@@ -42,6 +42,8 @@ parser.add_argument('--checkpoint-best', dest='checkpointbest',
                     action='store_true', help='Checkpoint best model')
 parser.add_argument('--beam-decode', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
+parser.add_argument('--hidden-dim', type = int, default = 512,
+                    help='Size of hidden units used in deepspeech model')
 
 MODEL_SAVE_DIR = 'models'
 LOG_DIR = 'logs/'
@@ -86,8 +88,9 @@ def load_saved_model(args):
         start_iter = 0
     else:
         start_iter += 1
-    avg_loss = int(package.get('avg_loss', 0))
-    return model, optim_state, start_epoch, start_iter, avg_loss
+    avg_loss = package.get('avg_loss', 0)
+    hidden_dim = package.get('hidden_size', None)
+    return model, optim_state, start_epoch, start_iter, avg_loss, hidden_dim
 
 
 if __name__ == '__main__':
@@ -99,14 +102,15 @@ if __name__ == '__main__':
 
     start_epoch, start_iter, optim_state = 0, 0, None
     if args.continue_from:  # Starting from previous model
-        model, optim_state, start_epoch, _, avg_loss = load_saved_model(args)
+        model, optim_state, start_epoch, _, avg_loss, hidden_dim = load_saved_model(args)
+        args.hidden_dim = hidden_dim
         print("previous avg loss is : ", avg_loss)
     else:
-        model = DeepSpeech()
+        model = DeepSpeech(args.hidden_dim)
     # if args.pretrained:  # Starting from previous model
     #     optim_state = None
     #     start_epoch = 0
-    print("number of params: ", DeepSpeech.get_param_size(model))
+    print("Hidden Size: {}, Number of params: {}".format(args.hidden_dim, DeepSpeech.get_param_size(model)))
     model = model.to(device)
 
     with open(args.char_vocab_path) as label_file:
