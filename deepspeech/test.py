@@ -5,7 +5,7 @@ import torch
 from tqdm import tqdm
 import json
 
-from dataloader import AudioDataLoader, SpectrogramDataset, BucketingSampler
+from dataloader import AudioDataLoader, AudioDataset, BucketingSampler
 from decoder import GreedyDecoder, BeamCTCDecoder
 from model import DeepSpeech
 
@@ -195,7 +195,7 @@ if __name__ == '__main__':
 
     target_decoder = GreedyDecoder(characters)
 
-    test_dataset = SpectrogramDataset(manifest_filepath=args.test_manifest, char_vocab_path=args.char_vocab_path)
+    test_dataset = AudioDataset(manifest_filepath=args.test_manifest, char_vocab_path=args.char_vocab_path)
     test_sampler = BucketingSampler(test_dataset, batch_size=args.batch_size)
     test_loader = AudioDataLoader(test_dataset, batch_sampler=test_sampler)
 

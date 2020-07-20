@@ -51,8 +51,8 @@ def _collate_fn(batch):
     targets = torch.IntTensor(targets)
     return inputs, targets, input_lengths, target_lengths, files
 
-class SpectrogramDataset(Dataset):
-    def __init__(self, manifest_filepath, char_vocab_path, audio_conf = audio_conf):
+class AudioDataset(Dataset):
+    def __init__(self, manifest_filepath, char_vocab_path, use_mfcc_features = False, audio_conf = audio_conf):
         super().__init__()
 
         with open(manifest_filepath) as f:
@@ -62,6 +62,7 @@ class SpectrogramDataset(Dataset):
         self.size = len(data_filepaths)
         self.char2ind = self.create_char2ind_map(char_vocab_path)
         self.audio_conf = audio_conf
+        self.use_mfcc_features = use_mfcc_features
 
     '''Takes in a file path to the character vocab and returns a dictionary
     mapping characters to indices'''
@@ -80,7 +81,7 @@ class SpectrogramDataset(Dataset):
     def get_mfcc_features(self, sound):
         mfcc = librosa.feature.mfcc(sound, sr = self.audio_conf['sample_rate'], \
             n_mfcc = 40, n_fft = self.audio_conf['n_fft'], window = self.audio_conf['window'])
-        return mfcc
+        return torch.FloatTensor(mfcc)
 
     #Takes in a sound array and returns a spectrogram
     def get_spectrogram(self, sound):
@@ -106,8 +107,11 @@ class SpectrogramDataset(Dataset):
     #Spectrogram is a num_seconds * max_frequency list of lists
     def parse_audio(self, audio_path):
         sound = self.load_audio(audio_path)
-        spect = self.get_spectrogram(sound)
-        return spect
+        if self.use_mfcc_features:
+            features = self.get_mfcc_features(sound)
+        else:
+            features = self.get_spectrogram(sound)
+        return features
 
     '''Takes in a transcript path and the char2ind map and returns an array of
     character indices representing the transcript'''

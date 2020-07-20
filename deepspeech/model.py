@@ -86,12 +86,13 @@ class SequenceWise(nn.Module):
         return x
 
 class DeepSpeech(nn.Module):
-    def __init__(self, rnn_hidden_size, sample_rate=audio_conf['sample_rate'], nb_layers=4, window_size=audio_conf['window_size']):
+    def __init__(self, rnn_hidden_size, use_mfcc_features = False, sample_rate=audio_conf['sample_rate'], nb_layers=4, window_size=audio_conf['window_size']):
         super().__init__()
 
         self.sample_rate = sample_rate
         self.rnn_hidden_size = rnn_hidden_size
         self.window_size = window_size
+        self.use_mfcc_features = use_mfcc_features
 
         self.conv = MaskConv(nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=(41, 11), stride=(2, 2), padding=(20, 5)),
@@ -101,7 +102,11 @@ class DeepSpeech(nn.Module):
             nn.BatchNorm2d(32),
         ))
 
-        rnn_input_size = int(math.floor((audio_conf['n_fft']) / 2) + 1)
+        if self.use_mfcc_features:
+            rnn_input_size = 40
+        else:
+            rnn_input_size = int(math.floor((audio_conf['n_fft']) / 2) + 1)
+        #Calculate output size of convolutional layers
         rnn_input_size = int(math.floor(rnn_input_size + 2 * 20 - 41) / 2 + 1)
         rnn_input_size = int(math.floor(rnn_input_size + 2 * 10 - 21) / 2 + 1)
         rnn_input_size *= 32
@@ -126,7 +131,9 @@ class DeepSpeech(nn.Module):
 
     def forward(self, x, lengths):
         output_lengths = self.get_seq_lens(lengths)
+        print('before: ', x.shape)
         x, _ = self.conv(x, output_lengths)
+        print('after: ', x.shape)
 
         sizes = x.size()
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
@@ -168,6 +175,7 @@ class DeepSpeech(nn.Module):
             'hidden_size': model.rnn_hidden_size,
             'sample_rate': model.sample_rate,
             'window_size': model.window_size,
+            'use_mfcc_features': model.use_mfcc_features,
             'state_dict': model.state_dict(),
         }
         if optimizer is not None:
@@ -196,7 +204,9 @@ class DeepSpeech(nn.Module):
 
     @classmethod
     def load_model_package(cls, package):
+        mfcc = package.get('use_mfcc_features', False)
         model = cls(rnn_hidden_size=package['hidden_size'],
+                    use_mfcc_features = mfcc,
                         sample_rate= package['sample_rate'],
                         window_size=package['window_size'])
         model.load_state_dict(package['state_dict'])
