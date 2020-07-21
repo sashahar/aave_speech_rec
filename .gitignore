@@ -8,6 +8,9 @@ data
 data_processed*
 data_processed_ROC
 
+#Logs
+deepspeech/logs/*
+
 # C extensions
 *.so
 
