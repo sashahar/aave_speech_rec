@@ -155,6 +155,7 @@ if __name__ == '__main__':
         os.mkdir(LOG_DIR)
 
     loss_log_file = LOG_DIR + "/" + LOG_FILE + "_loss.csv"
+    temp_high_loss_file = LOG_DIR + "/" +  "high_loss_examples.csv"
     cer_wer_log_file = LOG_DIR + "/" + LOG_FILE + "_er.csv"
     beam_decode_log_file = LOG_DIR + "/" + LOG_FILE + "_beam_er.csv"
     save_word_preds_file_train = LOG_DIR + "/" + SAVE_TXT_FILE + "_train.csv"
@@ -167,6 +168,8 @@ if __name__ == '__main__':
     if not args.continue_from:
         np.savetxt(loss_log_file, np.array(
             ['epoch,loss']), fmt="%s", delimiter=",")
+        np.savetxt(temp_high_loss_file, np.array(
+            ['epoch,iter,loss,example']), fmt="%s", delimiter=",")
         np.savetxt(cer_wer_log_file, np.array(
             ['epoch,loss,train_cer,train_wer, dev_cer,dev_wer']), fmt="%s", delimiter=",")
         np.savetxt(beam_decode_log_file, np.array(
@@ -208,6 +211,13 @@ if __name__ == '__main__':
 
             batch_time.update(time.time() - end)
             end = time.time()
+
+            #TEMPORARY
+            loss_num = float(loss.cpu().detach())
+            print(filenames[0])
+            if loss_num > 50:
+                with open(temp_high_loss_file, "a") as file:
+                    file.write("{},{},{},{}\n".format(epoch, i, loss_num, filenames[0]))
 
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
