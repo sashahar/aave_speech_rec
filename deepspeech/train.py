@@ -7,7 +7,7 @@ import os
 import numpy as np
 
 from model import DeepSpeech
-from dataloader import AudioDataLoader, SpectrogramDataset, BucketingSampler
+from dataloader import AudioDataLoader, AudioDataset, BucketingSampler
 from decoder import GreedyDecoder, BeamCTCDecoder
 from test import evaluate
 
@@ -44,6 +44,8 @@ parser.add_argument('--beam-decode', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 parser.add_argument('--hidden-dim', type = int, default = 512,
                     help='Size of hidden units used in deepspeech model')
+parser.add_argument('--use-mfcc-features', action='store_true',
+                    help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 
 MODEL_SAVE_DIR = 'models'
 LOG_DIR = 'logs/'
@@ -106,7 +108,7 @@ if __name__ == '__main__':
         args.hidden_dim = hidden_dim
         print("previous avg loss is : ", avg_loss)
     else:
-        model = DeepSpeech(args.hidden_dim)
+        model = DeepSpeech(args.hidden_dim, use_mfcc_features = args.use_mfcc_features)
     # if args.pretrained:  # Starting from previous model
     #     optim_state = None
     #     start_epoch = 0
@@ -123,12 +125,12 @@ if __name__ == '__main__':
 
     beam_decoder = BeamCTCDecoder(characters)
 
-    train_dataset = SpectrogramDataset(
-        manifest_filepath=args.train_manifest, char_vocab_path=args.char_vocab_path)
-    train_eval_dataset = SpectrogramDataset(
-        manifest_filepath=args.train_manifest, char_vocab_path=args.char_vocab_path)
-    val_dataset = SpectrogramDataset(
-        manifest_filepath=args.val_manifest, char_vocab_path=args.char_vocab_path)
+    train_dataset = AudioDataset(
+        manifest_filepath=args.train_manifest, char_vocab_path=args.char_vocab_path, use_mfcc_features= args.use_mfcc_features)
+    train_eval_dataset = AudioDataset(
+        manifest_filepath=args.train_manifest, char_vocab_path=args.char_vocab_path, use_mfcc_features= args.use_mfcc_features)
+    val_dataset = AudioDataset(
+        manifest_filepath=args.val_manifest, char_vocab_path=args.char_vocab_path, use_mfcc_features= args.use_mfcc_features)
 
     train_sampler = BucketingSampler(train_dataset, batch_size=args.batch_size)
 
