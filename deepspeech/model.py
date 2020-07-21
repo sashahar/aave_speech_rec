@@ -131,9 +131,7 @@ class DeepSpeech(nn.Module):
 
     def forward(self, x, lengths):
         output_lengths = self.get_seq_lens(lengths)
-        print('before: ', x.shape)
         x, _ = self.conv(x, output_lengths)
-        print('after: ', x.shape)
 
         sizes = x.size()
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
