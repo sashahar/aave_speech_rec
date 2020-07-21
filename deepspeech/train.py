@@ -214,7 +214,6 @@ if __name__ == '__main__':
 
             #TEMPORARY
             loss_num = float(loss.cpu().detach())
-            print(filenames[0])
             if loss_num > 50:
                 with open(temp_high_loss_file, "a") as file:
                     file.write("{},{},{},{}\n".format(epoch, i, loss_num, filenames[0]))
