@@ -14,6 +14,8 @@ parser.add_argument('--test-manifest', metavar='DIR',
                     help='path to validation manifest csv', default='data/test_manifest.csv')
 parser.add_argument('--lm-path',
                     help='path to ARPA-format language model', default=None)
+parser.add_argument('--alpha', default=0.0, type=float, help='Language model weight')
+parser.add_argument('--beta', default=0.0, type=float, help='Bonus weight for words')
 parser.add_argument('--batch-size', default=20, type=int, help='Batch size for testing')
 parser.add_argument('--num-workers', default=4, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--model-path', default='models/deepspeech_final.pth', help='Path to model file created by training')
@@ -193,7 +195,7 @@ if __name__ == '__main__':
     if not args.beam_decode:
         decoder = GreedyDecoder(characters)
     else:
-        decoder = BeamCTCDecoder(characters, lm_path = args.lm_path)
+        decoder = BeamCTCDecoder(characters, lm_path = args.lm_path, alpha = args.alpha, beta = args.beta)
 
     target_decoder = GreedyDecoder(characters)
 
