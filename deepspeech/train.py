@@ -46,6 +46,7 @@ parser.add_argument('--hidden-dim', type = int, default = 512,
                     help='Size of hidden units used in deepspeech model')
 parser.add_argument('--use-mfcc-features', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
+parser.add_argument('--seed', default=0, type=int, help='random seed')
 
 MODEL_SAVE_DIR = 'models'
 LOG_DIR = 'logs/'
@@ -96,7 +97,11 @@ def load_saved_model(args):
 
 
 if __name__ == '__main__':
+
     args = parser.parse_args()
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
     device = torch.device("cuda" if args.cuda else "cpu")
     print('using device: {}'.format(device))
 
