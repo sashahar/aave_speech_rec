@@ -6,11 +6,6 @@ import math
 from dataloader import audio_conf
 
 RNN_HIDDEN_SIZE = 512
-DEFAULT_SEED = 0
-
-#Set random seed
-torch.manual_seed(DEFAULT_SEED)
-torch.cuda.manual_seed_all(DEFAULT_SEED)
 
 class InferenceBatchSoftmax(nn.Module):
     def forward(self, input_):
