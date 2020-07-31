@@ -9,7 +9,7 @@ data_processed*
 data_processed_ROC
 
 #Logs
-deepspeech/logs/*
+deepspeech/logs/*.pth
 
 # C extensions
 *.so
