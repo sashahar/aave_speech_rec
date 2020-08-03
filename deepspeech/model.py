@@ -57,12 +57,13 @@ class BatchRNN(nn.Module):
     def flatten_parameters(self):
         self.rnn.flatten_parameters()
 
-    def forward(self, x, output_lengths):
+    def forward(self, x, output_lengths, total_length):
+        #TxNxH (seq_len, batch, feature_dim)
         if self.batch_norm is not None:
             x = self.batch_norm(x)
-        x = nn.utils.rnn.pack_padded_sequence(x, output_lengths)
+        x = nn.utils.rnn.pack_padded_sequence(x, output_lengths, batch_first=True)
         x, h = self.rnn(x)
-        x, _ = nn.utils.rnn.pad_packed_sequence(x)
+        x, _ = nn.utils.rnn.pad_packed_sequence(x, batch_first=True, total_length = total_length)
         if self.bidirectional:
             # (TxNxH*2) -> (TxNxH) by sum
             x = x.view(x.size(0), x.size(1), 2, -1).sum(2).view(x.size(0), x.size(1), -1)  # (TxNxH*2) -> (TxNxH) by sum
@@ -130,15 +131,24 @@ class DeepSpeech(nn.Module):
         self.inference_softmax = InferenceBatchSoftmax()
 
     def forward(self, x, lengths):
+        #X has shape: batch x 1 (num_channels) x n_fft (constant over all batches) x padded_seq_len
         output_lengths = self.get_seq_lens(lengths)
-        x, _ = self.conv(x, output_lengths)
+        total_length = max(output_lengths)
+        x, _ = self.conv(x, output_lengths) #X has shape: batch x 32 (num_channels) x rnn_input_size//32 x f(padded_seq_len)
 
         sizes = x.size()
+        #T = sizes[3] -> seq len
+        #N = sizes[0] -> batch size
+        #H = sizes[1] * sizes[2]
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
-        x = x.transpose(1, 2).transpose(0, 1).contiguous()  # TxNxH
+        x = x.transpose(1, 2).contiguous()  # NxTxH (batch dim first)
+
         for rnn in self.rnns:
             x = rnn(x, output_lengths)
+        #Output of RNN is bath first #NxTxH2
 
+        x = x.transpose(0, 1).contiguous() # TxNxH2, where H2 is self.rnn_hidden_size
+        print("\tIn Model: input size", x.size()) #TEMPORARY
         # T*N*H -> (T*N)*H
         t, n = x.size(0), x.size(1)
         x = x.view(t * n, -1)
