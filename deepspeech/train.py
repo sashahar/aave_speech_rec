@@ -6,7 +6,7 @@ import json
 import os
 import numpy as np
 
-from model import DeepSpeech
+from model import DeepSpeech, CustomDataParallel
 from dataloader import AudioDataLoader, AudioDataset, BucketingSampler
 from decoder import GreedyDecoder, BeamCTCDecoder
 from test import evaluate
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     if args.ngpu > 1:
         count = torch.cuda.device_count()
         print("Using DataParallel to distribute across {} GPUs".format(args.ngpu))
-        model = nn.DataParallel(model, list(range(args.ngpu)))
+        model = CustomDataParallel(model, list(range(args.ngpu)))
 
     with open(args.char_vocab_path) as label_file:
         characters = str(''.join(json.load(label_file)))
