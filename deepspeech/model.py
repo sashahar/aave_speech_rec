@@ -8,9 +8,9 @@ from dataloader import audio_conf
 RNN_HIDDEN_SIZE = 512
 
 class CustomDataParallel(nn.Module):
-    def __init__(self, model):
+    def __init__(self, model, device_ids = None):
         super(CustomDataParallel, self).__init__()
-        self.model = nn.DataParallel(model).cuda()
+        self.model = nn.DataParallel(model, device_ids).cuda()
 
     def forward(self, *input):
         return self.model(*input)
