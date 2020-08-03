@@ -137,9 +137,7 @@ class DeepSpeech(nn.Module):
         x, _ = self.conv(x, output_lengths) #X has shape: batch x 32 (num_channels) x rnn_input_size//32 x f(padded_seq_len)
 
         sizes = x.size()
-        #T = sizes[3] -> seq len
-        #N = sizes[0] -> batch size
-        #H = sizes[1] * sizes[2]
+
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
         x = x.transpose(1, 2).contiguous()  # NxTxH (batch dim first)
 
@@ -148,7 +146,6 @@ class DeepSpeech(nn.Module):
         #Output of RNN is bath first #NxTxH2
 
         x = x.transpose(0, 1).contiguous() # TxNxH2, where H2 is self.rnn_hidden_size
-        print("\tIn Model: input size", x.size()) #TEMPORARY
         # T*N*H -> (T*N)*H
         t, n = x.size(0), x.size(1)
         x = x.view(t * n, -1)
