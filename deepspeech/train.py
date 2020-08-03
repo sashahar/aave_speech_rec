@@ -126,8 +126,9 @@ if __name__ == '__main__':
 
     #Initialize multi GPU training if applicable
     if args.ngpu > 1:
-        print("Using DataParallel to distribute across {} GPUs".format(args.ngpu))
-        model = nn.DataParallel(model)
+        count = torch.cuda.device_count()
+        print("Using DataParallel to distribute across {} GPUs".format(count))
+        model = nn.DataParallel(model, list(range(count)))
 
     with open(args.char_vocab_path) as label_file:
         characters = str(''.join(json.load(label_file)))
