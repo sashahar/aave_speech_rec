@@ -42,6 +42,8 @@ def evaluate(test_loader, device, model, decoder, target_decoder, save_output=Fa
         #try:
         inputs, targets, input_sizes, target_sizes, filenames = data
 
+        total_length = max(input_sizes).item()
+
         inputs = inputs.to(device)
         targets = targets.to(device)
 
@@ -52,7 +54,7 @@ def evaluate(test_loader, device, model, decoder, target_decoder, save_output=Fa
             split_targets.append(targets[offset:offset + size])
             offset += size
 
-        out, output_sizes = model(inputs, input_sizes)
+        out, output_sizes = model(inputs, input_sizes, total_length)
 
         decoded_output, _ = decoder.decode(out, output_sizes)
         #print(decoded_output)
