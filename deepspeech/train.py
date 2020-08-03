@@ -47,6 +47,8 @@ parser.add_argument('--hidden-dim', type = int, default = 512,
 parser.add_argument('--use-mfcc-features', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 parser.add_argument('--seed', default=0, type=int, help='random seed')
+parser.add_argument('--ngpu', type = int, default = 1,
+                    help='Number of GPUs to use during training.  a number larger than 1 parallelizes training.')
 
 MODEL_SAVE_DIR = 'models'
 LOG_DIR = 'logs/'
@@ -121,6 +123,11 @@ if __name__ == '__main__':
     #     start_epoch = 0
     print("Hidden Size: {}, Number of params: {}".format(args.hidden_dim, DeepSpeech.get_param_size(model)))
     model = model.to(device)
+
+    #Initialize multi GPU training if applicable
+    if args.ngpu > 1:
+        print("Using DataParallel to distribute across {} GPUs".format(args.ngpu))
+        model = nn.DataParallel(model, list(range(ngpu))) #TODOL what is this second argument?
 
     with open(args.char_vocab_path) as label_file:
         characters = str(''.join(json.load(label_file)))
@@ -203,6 +210,9 @@ if __name__ == '__main__':
             targets = targets.to(device)
 
             out, output_sizes = model(inputs, input_sizes)
+            print("Outside: input size", inputs.size(),
+            "output_size", out.size())
+
             out = out.transpose(0, 1)  # TxNxH
 
             #Work around on CTCLoss bug
