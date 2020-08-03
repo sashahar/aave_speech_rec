@@ -62,6 +62,7 @@ class BatchRNN(nn.Module):
         if self.batch_norm is not None:
             x = self.batch_norm(x)
         x = nn.utils.rnn.pack_padded_sequence(x, output_lengths, batch_first=True)
+        self.rnn.flatten_parameters()
         x, h = self.rnn(x)
         x, _ = nn.utils.rnn.pad_packed_sequence(x, batch_first=True, total_length = total_length)
         if self.bidirectional:
