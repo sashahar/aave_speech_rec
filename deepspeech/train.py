@@ -205,11 +205,13 @@ if __name__ == '__main__':
             torch.cuda.empty_cache()
             # try:
             inputs, targets, input_sizes, target_sizes, filenames = data
+            total_length = max(input_sizes)
+            print("total length outside is: ", total_length)
 
             inputs = inputs.to(device)
             targets = targets.to(device)
 
-            out, output_sizes = model(inputs, input_sizes)
+            out, output_sizes = model(inputs, input_sizes, total_length)
             print("Outside: input size", inputs.size(),
             "output_size", out.size())
 

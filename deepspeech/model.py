@@ -130,10 +130,9 @@ class DeepSpeech(nn.Module):
 
         self.inference_softmax = InferenceBatchSoftmax()
 
-    def forward(self, x, lengths):
+    def forward(self, x, lengths, total_length):
         #X has shape: batch x 1 (num_channels) x n_fft (constant over all batches) x padded_seq_len
         output_lengths = self.get_seq_lens(lengths)
-        total_length = max(output_lengths)
         x, _ = self.conv(x, output_lengths) #X has shape: batch x 32 (num_channels) x rnn_input_size//32 x f(padded_seq_len)
 
         sizes = x.size()
