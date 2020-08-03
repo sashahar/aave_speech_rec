@@ -127,7 +127,7 @@ if __name__ == '__main__':
     #Initialize multi GPU training if applicable
     if args.ngpu > 1:
         print("Using DataParallel to distribute across {} GPUs".format(args.ngpu))
-        model = nn.DataParallel(model, list(range(ngpu))) #TODOL what is this second argument?
+        model = nn.DataParallel(model, list(range(args.ngpu))) #TODOL what is this second argument?
 
     with open(args.char_vocab_path) as label_file:
         characters = str(''.join(json.load(label_file)))
