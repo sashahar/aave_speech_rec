@@ -151,8 +151,8 @@ if __name__ == '__main__':
 
     train_loader = AudioDataLoader(train_dataset, batch_sampler=train_sampler, num_workers = 2)
     train_eval_loader = AudioDataLoader(
-        train_eval_dataset, batch_size=args.batch_size, num_workers = 2)
-    val_loader = AudioDataLoader(val_dataset, batch_size=args.batch_size, num_workers = 2)
+        train_eval_dataset, batch_size=args.batch_size)
+    val_loader = AudioDataLoader(val_dataset, batch_size=args.batch_size)
 
     lr = args.lr
     print("using learning rate: ", lr)
