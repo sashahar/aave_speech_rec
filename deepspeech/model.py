@@ -144,7 +144,7 @@ class DeepSpeech(nn.Module):
         x = x.transpose(1, 2).contiguous()  # NxTxH (batch dim first)
 
         for rnn in self.rnns:
-            x = rnn(x, output_lengths)
+            x = rnn(x, output_lengths, total_length)
         #Output of RNN is bath first #NxTxH2
 
         x = x.transpose(0, 1).contiguous() # TxNxH2, where H2 is self.rnn_hidden_size
