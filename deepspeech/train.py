@@ -49,6 +49,9 @@ parser.add_argument('--use-mfcc-features', action='store_true',
 parser.add_argument('--seed', default=0, type=int, help='random seed')
 parser.add_argument('--ngpu', type = int, default = 1,
                     help='Number of GPUs to use during training.  a number larger than 1 parallelizes training.')
+parser.add_argument('--num-workers', type = int, default = 0,
+                    help='Number of workers to use in DataLoader.  default value of 0 signifies no parallelism.')
+
 
 MODEL_SAVE_DIR = 'models'
 LOG_DIR = '/juice/scr/aharris6/logs/'
@@ -149,10 +152,10 @@ if __name__ == '__main__':
 
     train_sampler = BucketingSampler(train_dataset, batch_size=args.batch_size)
 
-    train_loader = AudioDataLoader(train_dataset, batch_sampler=train_sampler, num_workers = 2)
+    train_loader = AudioDataLoader(train_dataset, batch_sampler=train_sampler, num_workers = args.num_workers)
     train_eval_loader = AudioDataLoader(
-        train_eval_dataset, batch_size=args.batch_size)
-    val_loader = AudioDataLoader(val_dataset, batch_size=args.batch_size)
+        train_eval_dataset, batch_size=args.batch_size, num_workers = args.num_workers)
+    val_loader = AudioDataLoader(val_dataset, batch_size=args.batch_size, num_workers = args.num_workers)
 
     lr = args.lr
     print("using learning rate: ", lr)
