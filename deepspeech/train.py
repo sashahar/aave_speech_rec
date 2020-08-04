@@ -234,7 +234,7 @@ if __name__ == '__main__':
 
             #TEMPORARY
             loss_num = float(loss.cpu().detach())
-            if loss_num > 3 and loss_num > 2 * avg_loss:
+            if loss_num > 3 and loss_num > 2 * losses:
                 with open(temp_high_loss_file, "a") as file:
                     file.write("{},{},{},{}\n".format(epoch, i, loss_num, filenames[0]))
 
