@@ -81,7 +81,7 @@ class AudioDataset(Dataset):
     def get_mfcc_features(self, sound):
         mfcc = librosa.feature.mfcc(sound, sr = self.audio_conf['sample_rate'], \
             n_mfcc = 40, n_fft = self.audio_conf['n_fft'], window = self.audio_conf['window'])
-        return torch.FloatTensor(mfcc)
+        return mfcc
 
     #Takes in a sound array and returns a spectrogram
     def get_spectrogram(self, sound):
@@ -150,10 +150,10 @@ class AudioDataset(Dataset):
         sound = self.load_audio(audio_path)
         if self.use_mfcc_features:
             features = self.get_mfcc_features(sound) # n_mfcc * T
-            features = torch.transpose(features, 0, 1)
-            features = torch.FloatTensor(self.add_context_frames(features, 9)) #Context window of length 9
+            features = np.transpose(features)
+            features = self.add_context_frames(features, 9) #Context window of length 9
             features = (features - features.mean()) / features.std() #Normalize
-            features = torch.transpose(features, 0, 1)
+            features = torch.FloatTensor(np.transpose(features))
         else:
             features = self.get_spectrogram(sound) # D * T
         return features
