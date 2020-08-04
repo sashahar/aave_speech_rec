@@ -128,10 +128,10 @@ class DeepSpeech(nn.Module):
             rnn_input_size = rnn_hidden_size
         else:
             rnn_input_size = int(math.floor((audio_conf['n_fft']) / 2) + 1)
-        #Calculate output size of convolutional layers
-        rnn_input_size = int(math.floor(rnn_input_size + 2 * 20 - 41) / 2 + 1)
-        rnn_input_size = int(math.floor(rnn_input_size + 2 * 10 - 21) / 2 + 1)
-        rnn_input_size *= 32
+            #Calculate output size of convolutional layers
+            rnn_input_size = int(math.floor(rnn_input_size + 2 * 20 - 41) / 2 + 1)
+            rnn_input_size = int(math.floor(rnn_input_size + 2 * 10 - 21) / 2 + 1)
+            rnn_input_size *= 32
 
         rnns = []
 
