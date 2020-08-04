@@ -50,9 +50,9 @@ parser.add_argument('--seed', default=0, type=int, help='random seed')
 parser.add_argument('--ngpu', type = int, default = 1,
                     help='Number of GPUs to use during training.  a number larger than 1 parallelizes training.')
 parser.add_argument('--no-eval', dest='noeval', action='store_true', help='No evaluation')
+parser.add_argument('--log-file-path', default='/juice/scr/cpajot/logs/', help='Filepath to save logs')
 
 MODEL_SAVE_DIR = 'models'
-LOG_DIR = 'logs/'
 LOG_FILE = 'log'
 SAVE_TXT_FILE = 'word_preds'
 SAVE_MODEL_PARAMS = 'model_checkpoint'
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     device = torch.device("cuda" if args.cuda else "cpu")
     print('using device: {}'.format(device))
 
-    LOG_DIR += args.id
+    LOG_DIR = args.log_file_path + args.id
 
     start_epoch, start_iter, optim_state = 0, 0, None
     if args.continue_from:  # Starting from previous model
