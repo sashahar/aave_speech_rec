@@ -49,6 +49,7 @@ parser.add_argument('--use-mfcc-features', action='store_true',
 parser.add_argument('--seed', default=0, type=int, help='random seed')
 parser.add_argument('--ngpu', type = int, default = 1,
                     help='Number of GPUs to use during training.  a number larger than 1 parallelizes training.')
+parser.add_argument('--no-eval', dest='noeval', action='store_true', help='No evaluation')
 
 MODEL_SAVE_DIR = 'models'
 LOG_DIR = 'logs/'
@@ -138,7 +139,7 @@ if __name__ == '__main__':
     else:
         decoder = BeamCTCDecoder(characters)
 
-    beam_decoder = BeamCTCDecoder(characters)
+    #beam_decoder = BeamCTCDecoder(characters)
 
     train_dataset = AudioDataset(
         manifest_filepath=args.train_manifest, char_vocab_path=args.char_vocab_path, use_mfcc_features= args.use_mfcc_features)
@@ -174,7 +175,7 @@ if __name__ == '__main__':
     loss_log_file = LOG_DIR + "/" + LOG_FILE + "_loss.csv"
     temp_high_loss_file = LOG_DIR + "/" +  "high_loss_examples.csv"
     cer_wer_log_file = LOG_DIR + "/" + LOG_FILE + "_er.csv"
-    beam_decode_log_file = LOG_DIR + "/" + LOG_FILE + "_beam_er.csv"
+    #beam_decode_log_file = LOG_DIR + "/" + LOG_FILE + "_beam_er.csv"
     save_word_preds_file_train = LOG_DIR + "/" + SAVE_TXT_FILE + "_train.csv"
     save_word_preds_file_val = LOG_DIR + "/" + SAVE_TXT_FILE + "_val.csv"
     save_word_preds_file_train_best = LOG_DIR + "/" + SAVE_TXT_FILE + "_train_best.csv"
@@ -189,8 +190,8 @@ if __name__ == '__main__':
             ['epoch,iter,loss,example']), fmt="%s", delimiter=",")
         np.savetxt(cer_wer_log_file, np.array(
             ['epoch,loss,train_cer,train_wer, dev_cer,dev_wer']), fmt="%s", delimiter=",")
-        np.savetxt(beam_decode_log_file, np.array(
-            ['epoch,loss,train_cer,train_wer,dev_cer,dev_wer,dev_beam_cer,dev_beam_wer']), fmt="%s", delimiter=",")
+        #np.savetxt(beam_decode_log_file, np.array(
+        #    ['epoch,loss,train_cer,train_wer,dev_cer,dev_wer,dev_beam_cer,dev_beam_wer']), fmt="%s", delimiter=",")
 
     for epoch in range(start_epoch, args.epochs):
         model.train()
@@ -233,7 +234,7 @@ if __name__ == '__main__':
 
             #TEMPORARY
             loss_num = float(loss.cpu().detach())
-            if loss_num > 50:
+            if loss_num > 3 and loss_num > 2 * avg_loss:
                 with open(temp_high_loss_file, "a") as file:
                     file.write("{},{},{},{}\n".format(epoch, i, loss_num, filenames[0]))
 
@@ -254,13 +255,13 @@ if __name__ == '__main__':
         with open(loss_log_file, "a") as file:
             file.write("{},{}\n".format(epoch, avg_loss))
 
-        if (epoch % 3 == 0) or (epoch % 5 == 0):
+        if epoch % 5 == 0 and not args.noeval:
             with torch.no_grad():
                 train_wer, train_cer, out_train_data, out_train_text = evaluate(test_loader=train_eval_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
                 wer, cer, output_data, output_text = evaluate(
                     test_loader=val_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
-                beam_wer, beam_cer, beam_output_data, beam_output_text = evaluate(
-                    test_loader=val_loader, device=device, model=model, decoder=beam_decoder, target_decoder=decoder)
+                #beam_wer, beam_cer, beam_output_data, beam_output_text = evaluate(
+                #    test_loader=val_loader, device=device, model=model, decoder=beam_decoder, target_decoder=decoder)
                 # To evaluate on test set: evaluate(test_loader=train_eval_loader, device=device,model=model,decoder=decoder,target_decoder=decoder) #Edited line to evaluate on train set --> evaluate(test_loader=val_loader, device=device,model=model,decoder=decoder,target_decoder=decoder)
             wer_train_results.append(train_wer)
             cer_train_results.append(train_cer)
@@ -276,9 +277,9 @@ if __name__ == '__main__':
             with open(cer_wer_log_file, "a") as file:
                 file.write("{},{},{},{},{},{}\n".format(
                     epoch, avg_loss, train_cer, train_wer, cer, wer))
-            with open(beam_decode_log_file, "a") as file:
-                file.write("{},{},{},{},{},{},{},{}\n".format(
-                    epoch, avg_loss, train_cer, train_wer, cer, wer, beam_cer, beam_wer))
+            #with open(beam_decode_log_file, "a") as file:
+                #file.write("{},{},{},{},{},{},{},{}\n".format(
+                    #epoch, avg_loss, train_cer, train_wer, cer, wer, beam_cer, beam_wer))
 
             np.savetxt(save_word_preds_file_train, out_train_text, fmt="%s", delimiter=",")
             np.savetxt(save_word_preds_file_val, output_text, fmt="%s", delimiter=",")
