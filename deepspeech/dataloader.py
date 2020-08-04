@@ -103,6 +103,47 @@ class AudioDataset(Dataset):
         spect.div_(std)
         return spect
 
+    #From https://github.com/MyrtleSoftware/deepspeech/blob/master/src/deepspeech/data/preprocess.py
+    """Add context frames to each step in the original signal.
+    Args:
+        n_context: Number of context frames to add to frame in the original
+            signal.
+    Example:
+        >>> signal = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        >>> n_context = 2
+        >>> print(add_context_frames(signal, n_context))
+        [[0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]
+         [0 0 0 1 2 3 4 5 6 7 8 9 0 0 0]
+         [1 2 3 4 5 6 7 8 9 0 0 0 0 0 0]]
+    """
+
+    def add_context_frames(self, signal, n_context):
+        """
+        Args:
+            signal: numpy ndarray with shape (steps, features).
+        Returns:
+            numpy ndarray with shape:
+                (steps, features * (n_context + 1 + n_context))
+        """
+        # Pad to ensure first and last n_context frames in original signal have
+        # at least n_context frames to their left and right respectively.
+        steps, features = signal.shape
+        padding = np.zeros((n_context, features), dtype=signal.dtype)
+        signal = np.concatenate((padding, signal, padding))
+
+        window_size = n_context + 1 + n_context
+        strided_signal = np.lib.stride_tricks.as_strided(
+            signal,
+            # Shape of the new array.
+            (steps, window_size, features),
+            # Strides of the new array (bytes to step in each dim).
+            (signal.strides[0], signal.strides[0], signal.strides[1]),
+            # Disable write to prevent accidental errors as elems share memory.
+            writeable=False)
+
+        # Flatten last dim and return a copy to permit writes.
+        return strided_signal.reshape(steps, -1).copy()
+
     #Takes in an audio path and returns a spectrogram
     #Spectrogram is a num_seconds * max_frequency list of lists (Not sure this is correct?)
     def parse_audio(self, audio_path):
@@ -110,7 +151,7 @@ class AudioDataset(Dataset):
         if self.use_mfcc_features:
             features = self.get_mfcc_features(sound) # n_mfcc * T
             features = torch.transpose(features, 0, 1)
-            features = torch.FloatTensor(AddContextFrames(9)) #Context window of length 9
+            features = torch.FloatTensor(self.add_context_frames(features, 9)) #Context window of length 9
             features = (features - features.mean()) / features.std() #Normalize
             features = torch.transpose(features, 0, 1)
         else:
@@ -155,52 +196,4 @@ class BucketingSampler(Sampler):
 
     def shuffle(self, epoch):
         np.random.shuffle(self.bins)
-
-#From https://github.com/MyrtleSoftware/deepspeech/blob/master/src/deepspeech/data/preprocess.py
-class AddContextFrames:
-    """Add context frames to each step in the original signal.
-    Args:
-        n_context: Number of context frames to add to frame in the original
-            signal.
-    Example:
-        >>> signal = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        >>> n_context = 2
-        >>> print(add_context_frames(signal, n_context))
-        [[0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]
-         [0 0 0 1 2 3 4 5 6 7 8 9 0 0 0]
-         [1 2 3 4 5 6 7 8 9 0 0 0 0 0 0]]
-    """
-
-    def __init__(self, n_context):
-        self.n_context = n_context
-
-    def __call__(self, signal):
-        """
-        Args:
-            signal: numpy ndarray with shape (steps, features).
-        Returns:
-            numpy ndarray with shape:
-                (steps, features * (n_context + 1 + n_context))
-        """
-        # Pad to ensure first and last n_context frames in original signal have
-        # at least n_context frames to their left and right respectively.
-        steps, features = signal.shape
-        padding = np.zeros((self.n_context, features), dtype=signal.dtype)
-        signal = np.concatenate((padding, signal, padding))
-
-        window_size = self.n_context + 1 + self.n_context
-        strided_signal = np.lib.stride_tricks.as_strided(
-            signal,
-            # Shape of the new array.
-            (steps, window_size, features),
-            # Strides of the new array (bytes to step in each dim).
-            (signal.strides[0], signal.strides[0], signal.strides[1]),
-            # Disable write to prevent accidental errors as elems share memory.
-            writeable=False)
-
-        # Flatten last dim and return a copy to permit writes.
-        return strided_signal.reshape(steps, -1).copy()
-
-    def __repr__(self):
-        return self.__class__.__name__ + ('(n_context=%r)' % self.n_context)
 
