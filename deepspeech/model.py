@@ -160,7 +160,7 @@ class DeepSpeech(nn.Module):
         if self.use_mfcc_features:
             sizes = x.size()
             x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3]) #Collapse feature dimension NxFxT
-            x = x.transpose(1, 2) #NxTxF
+            x = x.transpose(1, 2).contiguous() #NxTxF
             n, t = x.size(0), x.size(1) #NxTxF --> (NxT)xF
             x = x.view(n * t, -1)
 
