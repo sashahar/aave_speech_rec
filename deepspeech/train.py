@@ -177,7 +177,7 @@ if __name__ == '__main__':
     loss_log_file = LOG_DIR + "/" + LOG_FILE + "_loss.csv"
     temp_high_loss_file = LOG_DIR + "/" +  "high_loss_examples.csv"
     cer_wer_log_file = LOG_DIR + "/" + LOG_FILE + "_er.csv"
-    beam_decode_log_file = LOG_DIR + "/" + LOG_FILE + "_beam_er.csv"
+    # beam_decode_log_file = LOG_DIR + "/" + LOG_FILE + "_beam_er.csv"
     save_word_preds_file_train = LOG_DIR + "/" + SAVE_TXT_FILE + "_train.csv"
     save_word_preds_file_val = LOG_DIR + "/" + SAVE_TXT_FILE + "_val.csv"
     save_word_preds_file_train_best = LOG_DIR + "/" + SAVE_TXT_FILE + "_train_best.csv"
@@ -257,13 +257,13 @@ if __name__ == '__main__':
         with open(loss_log_file, "a") as file:
             file.write("{},{}\n".format(epoch, avg_loss))
 
-        if (epoch % 3 == 0) or (epoch % 5 == 0):
+        if (epoch % 5 == 0):
             with torch.no_grad():
                 train_wer, train_cer, out_train_data, out_train_text = evaluate(test_loader=train_eval_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
                 wer, cer, output_data, output_text = evaluate(
                     test_loader=val_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
-                beam_wer, beam_cer, beam_output_data, beam_output_text = evaluate(
-                    test_loader=val_loader, device=device, model=model, decoder=beam_decoder, target_decoder=decoder)
+                # beam_wer, beam_cer, beam_output_data, beam_output_text = evaluate(
+                #     test_loader=val_loader, device=device, model=model, decoder=beam_decoder, target_decoder=decoder)
                 # To evaluate on test set: evaluate(test_loader=train_eval_loader, device=device,model=model,decoder=decoder,target_decoder=decoder) #Edited line to evaluate on train set --> evaluate(test_loader=val_loader, device=device,model=model,decoder=decoder,target_decoder=decoder)
             wer_train_results.append(train_wer)
             cer_train_results.append(train_cer)
@@ -279,9 +279,9 @@ if __name__ == '__main__':
             with open(cer_wer_log_file, "a") as file:
                 file.write("{},{},{},{},{},{}\n".format(
                     epoch, avg_loss, train_cer, train_wer, cer, wer))
-            with open(beam_decode_log_file, "a") as file:
-                file.write("{},{},{},{},{},{},{},{}\n".format(
-                    epoch, avg_loss, train_cer, train_wer, cer, wer, beam_cer, beam_wer))
+            # with open(beam_decode_log_file, "a") as file:
+            #     file.write("{},{},{},{},{},{},{},{}\n".format(
+            #         epoch, avg_loss, train_cer, train_wer, cer, wer, beam_cer, beam_wer))
 
             np.savetxt(save_word_preds_file_train, out_train_text, fmt="%s", delimiter=",")
             np.savetxt(save_word_preds_file_val, output_text, fmt="%s", delimiter=",")
