@@ -51,7 +51,7 @@ parser.add_argument('--ngpu', type = int, default = 1,
                     help='Number of GPUs to use during training.  a number larger than 1 parallelizes training.')
 
 MODEL_SAVE_DIR = 'models'
-LOG_DIR = 'logs/'
+LOG_DIR = '/juice/scr/aharris6/logs/'
 LOG_FILE = 'log'
 SAVE_TXT_FILE = 'word_preds'
 SAVE_MODEL_PARAMS = 'model_checkpoint'
