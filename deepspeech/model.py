@@ -118,8 +118,14 @@ class DeepSpeech(nn.Module):
             nn.BatchNorm2d(32),
         ))
 
+        self.mfcc_fc = nn.Sequential(
+            nn.Linear(40 * 19, self.rnn_hidden_size),
+            nn.BatchNorm1d(self.rnn_hidden_size)
+            nn.Hardtanh(0, 20, inplace=True),
+        )
+
         if self.use_mfcc_features:
-            rnn_input_size = 40
+            rnn_input_size = rnn_hidden_size
         else:
             rnn_input_size = int(math.floor((audio_conf['n_fft']) / 2) + 1)
         #Calculate output size of convolutional layers
@@ -148,16 +154,29 @@ class DeepSpeech(nn.Module):
     def forward(self, x, lengths, total_length):
         #X has shape: batch x 1 (num_channels) x n_fft (constant over all batches) x padded_seq_len
         output_lengths = self.get_seq_lens(lengths)
-        x, _ = self.conv(x, output_lengths) #X has shape: batch x 32 (num_channels) x rnn_input_size//32 x f(padded_seq_len)
 
-        sizes = x.size()
+        print("Input shape: ", x.shape)
 
-        x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
-        x = x.transpose(1, 2).contiguous()  # NxTxH (batch dim first)
+        if self.use_mfcc_features:
+            sizes = x.size()
+            x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3]) #Collapse feature dimension NxFxT
+            x = x.transpose(1, 2) #NxTxF
+            n, t = x.size(0), x.size(1) #NxTxF --> (NxT)xF
+            x = x.view(n * t, -1)
+
+            x = self.mfcc_fc(x)
+
+            x = x.view(n, t, -1) #(NxT)xH --> NxTxH
+            print("After fully connected shape: ", x.shape)
+        else:
+            x, _ = self.conv(x, output_lengths) #X has shape: batch x 32 (num_channels) x rnn_input_size//32 x f(padded_seq_len)
+            sizes = x.size()
+            x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
+            x = x.transpose(1, 2).contiguous()  # NxTxH (batch dim first)
 
         for rnn in self.rnns:
             x = rnn(x, output_lengths, total_length)
-        #Output of RNN is bath first #NxTxH2
+        #Output of RNN is batch first #NxTxH2
 
         x = x.transpose(0, 1).contiguous() # TxNxH2, where H2 is self.rnn_hidden_size
         # T*N*H -> (T*N)*H
