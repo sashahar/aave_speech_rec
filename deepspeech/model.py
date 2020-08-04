@@ -120,8 +120,8 @@ class DeepSpeech(nn.Module):
 
         self.mfcc_fc = nn.Sequential(
             nn.Linear(40 * 19, self.rnn_hidden_size),
-            nn.BatchNorm1d(self.rnn_hidden_size)
-            nn.Hardtanh(0, 20, inplace=True),
+            nn.BatchNorm1d(self.rnn_hidden_size),
+            nn.Hardtanh(0, 20, inplace=True)
         )
 
         if self.use_mfcc_features:
