@@ -155,8 +155,6 @@ class DeepSpeech(nn.Module):
         #X has shape: batch x 1 (num_channels) x n_fft (constant over all batches) x padded_seq_len
         output_lengths = self.get_seq_lens(lengths)
 
-        print("Input shape: ", x.shape)
-
         if self.use_mfcc_features:
             sizes = x.size()
             x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3]) #Collapse feature dimension NxFxT
@@ -167,7 +165,6 @@ class DeepSpeech(nn.Module):
             x = self.mfcc_fc(x)
 
             x = x.view(n, t, -1) #(NxT)xH --> NxTxH
-            print("After fully connected shape: ", x.shape)
         else:
             x, _ = self.conv(x, output_lengths) #X has shape: batch x 32 (num_channels) x rnn_input_size//32 x f(padded_seq_len)
             sizes = x.size()
