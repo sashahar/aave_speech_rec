@@ -83,6 +83,23 @@ class AudioDataset(Dataset):
             n_mfcc = 40, n_fft = self.audio_conf['n_fft'], window = self.audio_conf['window'])
         return torch.FloatTensor(mfcc)
 
+    def get_mel_filterbank(self, sound):
+        n_fft = self.audio_conf['n_fft']
+        win_length = n_fft
+        hop_length = int(self.audio_conf['sample_rate'] * self.audio_conf['window_stride'])
+        #Return complex values spectrogram (D) - Short Time Fourier Transform
+        D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
+                                 win_length=win_length, window=self.audio_conf['window'])
+        magnitude = np.abs(D)**2
+        mel = librosa.filters.mel(sr=self.audio_conf['sample_rate'], n_fft=n_fft, n_mels=164)
+        mel_spect = mel.dot(magnitude)
+        #Normalize spectrogram
+        mean = mel_spect.mean()
+        std = mel_spect.std()
+        mel_spect.add_(-mean)
+        mel_spect.div_(std)
+        return mel_spect
+
     #Takes in a sound array and returns a spectrogram
     def get_spectrogram(self, sound):
         n_fft = self.audio_conf['n_fft']
