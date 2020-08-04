@@ -192,8 +192,8 @@ if __name__ == '__main__':
             ['epoch,iter,loss,example']), fmt="%s", delimiter=",")
         np.savetxt(cer_wer_log_file, np.array(
             ['epoch,loss,train_cer,train_wer, dev_cer,dev_wer']), fmt="%s", delimiter=",")
-        np.savetxt(beam_decode_log_file, np.array(
-            ['epoch,loss,train_cer,train_wer,dev_cer,dev_wer,dev_beam_cer,dev_beam_wer']), fmt="%s", delimiter=",")
+        # np.savetxt(beam_decode_log_file, np.array(
+        #     ['epoch,loss,train_cer,train_wer,dev_cer,dev_wer,dev_beam_cer,dev_beam_wer']), fmt="%s", delimiter=",")
 
     for epoch in range(start_epoch, args.epochs):
         model.train()
