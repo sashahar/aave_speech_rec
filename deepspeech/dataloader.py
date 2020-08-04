@@ -110,7 +110,8 @@ class AudioDataset(Dataset):
         if self.use_mfcc_features:
             features = self.get_mfcc_features(sound) # n_mfcc * T
             features = torch.transpose(features, 0, 1)
-            features = AddContextFrames(9) #Context window of length 9
+            features = torch.FloatTensor(AddContextFrames(9)) #Context window of length 9
+            features = (features - features.mean()) / features.std() #Normalize
             features = torch.transpose(features, 0, 1)
         else:
             features = self.get_spectrogram(sound) # D * T
