@@ -6,6 +6,7 @@ import math
 from dataloader import audio_conf
 
 RNN_HIDDEN_SIZE = 512
+RNN_TYPE = nn.GRU
 
 class CustomDataParallel(nn.Module):
     def __init__(self, model, device_ids = None):
@@ -130,11 +131,11 @@ class DeepSpeech(nn.Module):
         rnns = []
 
         #self.rnn = nn.LSTM(input_size=rnn_input_size, hidden_size=self.rnn_hidden_size, bidirectional=True, bias=True)
-        rnn = BatchRNN(input_size=rnn_input_size, hidden_size=rnn_hidden_size, rnn_type=nn.LSTM,
+        rnn = BatchRNN(input_size=rnn_input_size, hidden_size=rnn_hidden_size, rnn_type=RNN_TYPE,
                        bidirectional=True, batch_norm=False)
         rnns.append(('0', rnn))
         for x in range(nb_layers - 1):
-            rnn = BatchRNN(input_size=rnn_hidden_size, hidden_size=rnn_hidden_size, rnn_type=nn.LSTM,
+            rnn = BatchRNN(input_size=rnn_hidden_size, hidden_size=rnn_hidden_size, rnn_type=RNN_TYPE,
                            bidirectional=True)
             rnns.append(('%d' % (x + 1), rnn))
         self.rnns = nn.Sequential(OrderedDict(rnns))
@@ -220,6 +221,15 @@ class DeepSpeech(nn.Module):
                 tmp *= x
             params += tmp
         return params
+        
+    @staticmethod
+    def summarize_parameters(model):
+        for name, p in model.named_parameters():
+            tmp = 1
+            for x in p.size():
+                tmp *= x
+            print("Name: {}, Params: {}".format(name, tmp))
+
 
     @classmethod
     def load_model_package(cls, package):
