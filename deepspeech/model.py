@@ -337,7 +337,7 @@ class DeepSpeechSimple(nn.Module):
         #Output of RNN, h has shape:(batch, padded_seq_len, rnn_hidden_size)
         out = self.output_fc(h)
         print("output size: ", out.shape)
-        return out
+        return out, output_lengths
 
     def _fully_connected(self, in_sz, out_sz, batch_norm = False):
         seq = []
