@@ -360,7 +360,6 @@ class DeepSpeechSimple(nn.Module):
             'hidden_size': model.rnn_hidden_size,
             'sample_rate': model.sample_rate,
             'window_size': model.window_size,
-            'use_mfcc_features': model.use_mfcc_features,
             'state_dict': model.state_dict(),
         }
         if optimizer is not None:
