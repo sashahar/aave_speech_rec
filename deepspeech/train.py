@@ -218,8 +218,6 @@ if __name__ == '__main__':
 
             out = out.transpose(0, 1)  # TxNxH
 
-            print(out.shape)
-
             #Work around on CTCLoss bug
             #https://github.com/pytorch/pytorch/issues/22234
             with torch.backends.cudnn.flags(enabled=False):

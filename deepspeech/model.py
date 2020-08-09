@@ -314,10 +314,8 @@ class DeepSpeechSimple(nn.Module):
             Logits of shape (seq_len, batch, out_features).
         """
         output_lengths = self.get_seq_lens(lengths)
-        print("Input size: ", x.shape)
         x, _ = self.conv(x, output_lengths)
         #x has shape: (batch, 32(num_channels), fc_input_size//32 x padded_seq_len)
-        print("Conv output size:", x.shape)
         sizes = x.size()
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
         x = x.transpose(1, 2).contiguous()
