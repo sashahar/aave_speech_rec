@@ -340,6 +340,7 @@ class DeepSpeechSimple(nn.Module):
         #Output of RNN, h has shape:(batch, padded_seq_len, rnn_hidden_size)
         print("FC input size: ", h.shape)
         out = self.output_fc(h)
+        out = self.inference_softmax(out)
         print("output size: ", out.shape)
         return out, output_lengths
 
