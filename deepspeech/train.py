@@ -216,7 +216,9 @@ if __name__ == '__main__':
 
             out, output_sizes = model(inputs, input_sizes, total_length)
 
-            #out = out.transpose(0, 1)  # TxNxH
+            out = out.transpose(0, 1)  # TxNxH
+
+            print(out.shape)
 
             #Work around on CTCLoss bug
             #https://github.com/pytorch/pytorch/issues/22234
