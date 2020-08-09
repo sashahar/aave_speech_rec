@@ -299,12 +299,6 @@ class DeepSpeechSimple(nn.Module):
 
         self.rnn = BatchRNN(input_size=2*self.fc_hidden_size, hidden_size=rnn_hidden_size, rnn_type=RNN_TYPE,
                        bidirectional=True, batch_norm=False)
-        # rnns.append(('0', rnn))
-        # for x in range(nb_layers - 1):
-        #     rnn = BatchRNN(input_size=rnn_hidden_size, hidden_size=rnn_hidden_size, rnn_type=RNN_TYPE,
-        #                    bidirectional=True)
-        #     rnns.append(('%d' % (x + 1), rnn))
-        # self.rnns = nn.Sequential(OrderedDict(rnns))
         self.output_fc = CollapseDim(nn.Sequential(
             nn.BatchNorm1d(self.rnn_hidden_size),
             nn.Linear(self.rnn_hidden_size, 29, bias=False)
@@ -328,20 +322,16 @@ class DeepSpeechSimple(nn.Module):
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
         x = x.transpose(1, 2).contiguous()
         #x has shape: (batch, padded_seq_len, fc_input_size)
-        print("FC input size: ", x.shape)
         h = self.fc1(x)
         #h has shape: (batch, padded_seq_len, fc_hidden_size)
         h = self.fc2(h)
         #h has shape: (batch, padded_seq_len, fc_hidden_size)
         h = self.fc3(h)
         #h has shape: (batch, padded_seq_len, 2*fc_hidden_size)
-        print("RNN input size:", h.shape)
         h = self.rnn(h, output_lengths, total_length)
         #Output of RNN, h has shape:(batch, padded_seq_len, rnn_hidden_size)
-        print("FC input size: ", h.shape)
         out = self.output_fc(h)
         out = self.inference_softmax(out)
-        print("output size: ", out.shape)
         return out, output_lengths
 
     def _fully_connected(self, in_sz, out_sz, batch_norm = False):
