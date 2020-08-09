@@ -305,7 +305,10 @@ class DeepSpeechSimple(nn.Module):
         #                    bidirectional=True)
         #     rnns.append(('%d' % (x + 1), rnn))
         # self.rnns = nn.Sequential(OrderedDict(rnns))
-        self.output_fc = self._fully_connected(rnn_hidden_size, 29, batch_norm=True)
+        self.output_fc = nn.Sequential(
+            nn.BatchNorm1d(self.rnn_hidden_size),
+            nn.Linear(self.rnn_hidden_size, 29, bias=False)
+        )
 
         self.inference_softmax = InferenceBatchSoftmax()
 
@@ -335,6 +338,7 @@ class DeepSpeechSimple(nn.Module):
         print("RNN input size:", h.shape)
         h = self.rnn(h, output_lengths, total_length)
         #Output of RNN, h has shape:(batch, padded_seq_len, rnn_hidden_size)
+        print("FC input size: ", h.shape)
         out = self.output_fc(h)
         print("output size: ", out.shape)
         return out, output_lengths
