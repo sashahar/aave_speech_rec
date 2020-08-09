@@ -214,11 +214,9 @@ if __name__ == '__main__':
             inputs = inputs.to(device)
             targets = targets.to(device)
 
-            output = model(inputs, input_sizes, total_length)
-            print("output len: ", len(output))
-            out, output_sizes = output
+            out, output_sizes = model(inputs, input_sizes, total_length)
 
-            out = out.transpose(0, 1)  # TxNxH
+            #out = out.transpose(0, 1)  # TxNxH
 
             #Work around on CTCLoss bug
             #https://github.com/pytorch/pytorch/issues/22234
