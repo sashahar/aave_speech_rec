@@ -214,7 +214,9 @@ if __name__ == '__main__':
             inputs = inputs.to(device)
             targets = targets.to(device)
 
-            out, output_sizes = model(inputs, input_sizes, total_length)
+            output = model(inputs, input_sizes, total_length)
+            print("output len: ", len(output))
+            out, output_sizes = output
 
             out = out.transpose(0, 1)  # TxNxH
 
