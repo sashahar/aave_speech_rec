@@ -344,7 +344,7 @@ class DeepSpeechSimple(nn.Module):
             seq.append(nn.BatchNorm1d(in_sz))
         seq.append(nn.Linear(in_sz, out_sz))
         seq.append(nn.Hardtanh(0, self._relu_clip, inplace=True))
-        return CollapseDim(nn.Sequential(seq))
+        return CollapseDim(nn.Sequential(*seq))
 
     def get_seq_lens(self, input_length):
         """
