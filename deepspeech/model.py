@@ -289,8 +289,8 @@ class DeepSpeechSimple(nn.Module):
         ))
         #Calculate output size of convolutional layers
         fc_input_size = int(math.floor((audio_conf['n_fft']) / 2) + 1) #yields size of spectrogram
-        fc_input_size = int(math.floor(rnn_input_size + 2 * 20 - 41) / 2 + 1)
-        fc_input_size = int(math.floor(rnn_input_size + 2 * 10 - 21) / 2 + 1)
+        fc_input_size = int(math.floor(fc_input_size + 2 * 20 - 41) / 2 + 1)
+        fc_input_size = int(math.floor(fc_input_size + 2 * 10 - 21) / 2 + 1)
         fc_input_size *= 32
 
         self.fc1 = self._fully_connected(fc_input_size, self.fc_hidden_size)
