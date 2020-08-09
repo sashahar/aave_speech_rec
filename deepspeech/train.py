@@ -54,7 +54,7 @@ parser.add_argument('--num-workers', type = int, default = 0,
 
 
 MODEL_SAVE_DIR = 'models'
-LOG_DIR = '/juice/scr/aharris6/logs/'
+LOG_DIR = 'logs/' #'/juice/scr/aharris6/logs/'
 LOG_FILE = 'log'
 SAVE_TXT_FILE = 'word_preds'
 SAVE_MODEL_PARAMS = 'model_checkpoint'
