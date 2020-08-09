@@ -331,10 +331,10 @@ class DeepSpeechSimple(nn.Module):
         #h has shape: (batch, padded_seq_len, fc_hidden_size)
         h = self.fc3(h)
         #h has shape: (batch, padded_seq_len, 2*fc_hidden_size)
-        print("RNN input size:", x.shape)
-        h, _ = self.rnn(h, output_lengths, total_length)
+        print("RNN input size:", h.shape)
+        h = self.rnn(h, output_lengths, total_length)
         #Output of RNN, h has shape:(batch, padded_seq_len, rnn_hidden_size)
-        out = self.fc4(output_fc)
+        out = self.output_fc(h)
         print("output size: ", out.shape)
         return out
 
