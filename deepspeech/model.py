@@ -305,10 +305,10 @@ class DeepSpeechSimple(nn.Module):
         #                    bidirectional=True)
         #     rnns.append(('%d' % (x + 1), rnn))
         # self.rnns = nn.Sequential(OrderedDict(rnns))
-        self.output_fc = nn.Sequential(
+        self.output_fc = CollapseDim(nn.Sequential(
             nn.BatchNorm1d(self.rnn_hidden_size),
             nn.Linear(self.rnn_hidden_size, 29, bias=False)
-        )
+        ))
 
         self.inference_softmax = InferenceBatchSoftmax()
 
