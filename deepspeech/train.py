@@ -6,7 +6,7 @@ import json
 import os
 import numpy as np
 
-from model import DeepSpeech, CustomDataParallel
+from model import DeepSpeech, DeepSpeechSimple, CustomDataParallel
 from dataloader import AudioDataLoader, AudioDataset, BucketingSampler
 from decoder import GreedyDecoder, BeamCTCDecoder
 from test import evaluate
@@ -79,11 +79,11 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def load_saved_model(args):
+def load_saved_model(args, model_type = DeepSpeech):
     print("Loading checkpoint model %s" % args.continue_from)
     package = torch.load(args.continue_from,
                          map_location=lambda storage, loc: storage)
-    model = DeepSpeech.load_model_package(package)
+    model = model_type.load_model_package(package)
 
     # if not args.finetune:  # Don't want to restart training
     optim_state = package['optim_dict']
@@ -116,15 +116,15 @@ if __name__ == '__main__':
 
     start_epoch, start_iter, optim_state = 0, 0, None
     if args.continue_from:  # Starting from previous model
-        model, optim_state, start_epoch, _, avg_loss, hidden_dim = load_saved_model(args)
+        model, optim_state, start_epoch, _, avg_loss, hidden_dim = load_saved_model(args, model_type=DeepSpeechSimple)
         args.hidden_dim = hidden_dim
         print("previous avg loss is : ", avg_loss)
     else:
-        model = DeepSpeech(args.hidden_dim, use_mfcc_features = args.use_mfcc_features)
+        model = DeepSpeechSimple(args.hidden_dim)
     # if args.pretrained:  # Starting from previous model
     #     optim_state = None
     #     start_epoch = 0
-    print("Hidden Size: {}, Number of params: {}".format(args.hidden_dim, DeepSpeech.get_param_size(model)))
+    print("Hidden Size: {}, Number of params: {}".format(args.hidden_dim, DeepSpeechSimple.get_param_size(model)))
     model = model.to(device)
 
     #Initialize multi GPU training if applicable
@@ -293,7 +293,7 @@ if __name__ == '__main__':
                 np.savetxt(save_word_preds_file_val_best, output_text, fmt="%s", delimiter=",")
                 if args.checkpoint:
                     print("Saving checkpoint model to %s" % save_model_params_file_val_best)
-                    torch.save(DeepSpeech.serialize(model, optimizer=optimizer, epoch=epoch, iteration=i,
+                    torch.save(DeepSpeechSimple.serialize(model, optimizer=optimizer, epoch=epoch, iteration=i,
                                                     loss_results=loss_results,
                                                     wer_results=wer_dev_results, cer_results=cer_dev_results, avg_loss=avg_loss),
                                                     save_model_params_file_val_best)
@@ -303,7 +303,7 @@ if __name__ == '__main__':
                 np.savetxt(save_word_preds_file_train_best, out_train_text, fmt="%s", delimiter=",")
                 if args.checkpoint:
                     print("Saving checkpoint model to %s" % save_model_params_file_train_best)
-                    torch.save(DeepSpeech.serialize(model, optimizer=optimizer, epoch=epoch, iteration=i,
+                    torch.save(DeepSpeechSimple.serialize(model, optimizer=optimizer, epoch=epoch, iteration=i,
                                                     loss_results=loss_results,
                                                     wer_results=wer_dev_results, cer_results=cer_dev_results, avg_loss=avg_loss),
                                                     save_model_params_file_train_best)

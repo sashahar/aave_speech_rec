@@ -221,7 +221,178 @@ class DeepSpeech(nn.Module):
                 tmp *= x
             params += tmp
         return params
-        
+
+    @staticmethod
+    def summarize_parameters(model):
+        for name, p in model.named_parameters():
+            tmp = 1
+            for x in p.size():
+                tmp *= x
+            print("Name: {}, Params: {}".format(name, tmp))
+
+
+    @classmethod
+    def load_model_package(cls, package):
+        mfcc = package.get('use_mfcc_features', False)
+        model = cls(rnn_hidden_size=package['hidden_size'],
+                    use_mfcc_features = mfcc,
+                        sample_rate= package['sample_rate'],
+                        window_size=package['window_size'])
+        model.load_state_dict(package['state_dict'])
+        return model
+
+class CollapseDim(nn.Module):
+    """Collapses a tensor to 2D, applies a module, and (re-)expands the tensor.
+    An n-dimensional tensor of shape (s_1, s_2, ..., s_n) is first collapsed to
+    a tensor with shape (s_1*s_2*...*s_n-1, s_n). The module is called with
+    this as input producing (s_1*s_2*...*s_n-1, s_n') --- note that the final
+    dimension can change. This is expanded to (s_1, s_2, ..., s_n-1, s_n') and
+    returned.
+    Args:
+        module (nn.Module): Module to apply. Must accept a 2D tensor as input
+            and produce a 2D tensor as output, optionally changing the size of
+            the last dimension.
+    """
+
+    def __init__(self, module):
+        super().__init__()
+        self.module = module
+
+    def forward(self, x):
+        *dims, input_size = x.size()
+
+        reduced_dims = 1
+        for dim in dims:
+            reduced_dims *= dim
+
+        x = x.view(reduced_dims, -1)
+        x = self.module(x)
+        x = x.view(*dims, -1)
+        return x
+
+class DeepSpeechSimple(nn.Module):
+    def __init__(self, rnn_hidden_size, fc_hidden_size = 128, sample_rate=audio_conf['sample_rate'], window_size=audio_conf['window_size']):
+        super().__init__()
+
+        self.sample_rate = sample_rate
+        self.rnn_hidden_size = rnn_hidden_size
+        self.fc_hidden_size = fc_hidden_size
+        self.window_size = window_size
+        self._relu_clip = 100
+
+        self.conv = MaskConv(nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=(41, 11), stride=(2, 2), padding=(20, 5)),
+            nn.BatchNorm2d(32),
+            nn.Hardtanh(0, 20, inplace=True),
+            nn.Conv2d(32, 32, kernel_size=(21, 11), stride=(2, 1), padding=(10, 5)),
+            nn.BatchNorm2d(32),
+        ))
+        #Calculate output size of convolutional layers
+        fc_input_size = int(math.floor((audio_conf['n_fft']) / 2) + 1) #yields size of spectrogram
+        fc_input_size = int(math.floor(rnn_input_size + 2 * 20 - 41) / 2 + 1)
+        fc_input_size = int(math.floor(rnn_input_size + 2 * 10 - 21) / 2 + 1)
+        fc_input_size *= 32
+
+        self.fc1 = self._fully_connected(fc_input_size, self.fc_hidden_size)
+        self.fc2 = self._fully_connected(self.fc_hidden_size, self.fc_hidden_size)
+        self.fc3 = self._fully_connected(self.fc_hidden_size, 2*self.fc_hidden_size)
+
+        self.rnn = BatchRNN(input_size=2*self.fc_hidden_size, hidden_size=rnn_hidden_size, rnn_type=RNN_TYPE,
+                       bidirectional=True, batch_norm=False)
+        # rnns.append(('0', rnn))
+        # for x in range(nb_layers - 1):
+        #     rnn = BatchRNN(input_size=rnn_hidden_size, hidden_size=rnn_hidden_size, rnn_type=RNN_TYPE,
+        #                    bidirectional=True)
+        #     rnns.append(('%d' % (x + 1), rnn))
+        # self.rnns = nn.Sequential(OrderedDict(rnns))
+        self.output_fc = self._fully_connected(rnn_hidden_size, 29, batch_norm=True)
+
+        self.inference_softmax = InferenceBatchSoftmax()
+
+    def forward(self, x, lengths, total_length):
+        """Computes a single forward pass through the network.
+        Args:
+            x: A tensor of shape (batch, n_channels, batch, n_fft/2, padded_seq_len).
+        Returns:
+            Logits of shape (seq_len, batch, out_features).
+        """
+        output_lengths = self.get_seq_lens(lengths)
+        print("Input size: ", x.shape)
+        x, _ = self.conv(x, output_lengths)
+        #x has shape: (batch, 32(num_channels), fc_input_size//32 x padded_seq_len)
+        sizes = x.size()
+        x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
+        x = x.transpose(1, 2).contiguous()
+        #x has shape: (batch, padded_seq_len, fc_input_size)
+        print("FC input size: ", x.shape)
+        h = self.fc1(x)
+        #h has shape: (batch, padded_seq_len, fc_hidden_size)
+        h = self.fc2(h)
+        #h has shape: (batch, padded_seq_len, fc_hidden_size)
+        h = self.fc3(h)
+        #h has shape: (batch, padded_seq_len, 2*fc_hidden_size)
+        print("RNN input size:", x.shape)
+        h, _ = self.rnn(h, output_lengths, total_length)
+        #Output of RNN, h has shape:(batch, padded_seq_len, rnn_hidden_size)
+        out = self.fc4(output_fc)
+        print("output size: ", out.shape)
+        return out
+
+    def _fully_connected(self, in_sz, out_sz, batch_norm = False):
+        seq = []
+        if batch_norm:
+            seq.append(nn.BatchNorm1d(in_sz))
+        seq.append(nn.Linear(in_sz, out_sz))
+        seq.append(nn.Hardtanh(0, self._relu_clip, inplace=True))
+        return CollapseDim(nn.Sequential(seq))
+
+    def get_seq_lens(self, input_length):
+        """
+        Given a 1D Tensor or Variable containing integer sequence lengths, return a 1D tensor or variable
+        containing the size sequences that will be output by the network.
+        :param input_length: 1D Tensor
+        :return: 1D Tensor scaled by model
+        """
+        seq_len = input_length
+        for m in self.conv.modules():
+            if type(m) == nn.modules.conv.Conv2d:
+                seq_len = ((seq_len + 2 * m.padding[1] - m.dilation[1] * (m.kernel_size[1] - 1) - 1) / m.stride[1] + 1)
+        return seq_len.int()
+
+    @staticmethod
+    def serialize(model, optimizer=None, epoch=None, iteration=None, loss_results=None,
+                  cer_results=None, wer_results=None, avg_loss=None):
+        package = {
+            'hidden_size': model.rnn_hidden_size,
+            'sample_rate': model.sample_rate,
+            'window_size': model.window_size,
+            'use_mfcc_features': model.use_mfcc_features,
+            'state_dict': model.state_dict(),
+        }
+        if optimizer is not None:
+            package['optim_dict'] = optimizer.state_dict()
+        if avg_loss is not None:
+            package['avg_loss'] = avg_loss
+        if epoch is not None:
+            package['epoch'] = epoch + 1  # increment for readability
+        if iteration is not None:
+            package['iteration'] = iteration
+        if loss_results is not None:
+            package['loss_results'] = loss_results
+            package['cer_results'] = cer_results
+            package['wer_results'] = wer_results
+        return package
+
+    @staticmethod
+    def get_param_size(model):
+        params = 0
+        for p in model.parameters():
+            tmp = 1
+            for x in p.size():
+                tmp *= x
+            params += tmp
+        return params
+
     @staticmethod
     def summarize_parameters(model):
         for name, p in model.named_parameters():
