@@ -7,6 +7,7 @@ from dataloader import audio_conf
 
 RNN_HIDDEN_SIZE = 512
 NB_LAYERS = 4
+RNN_TYPE = nn.LSTM
 
 class CustomDataParallel(nn.Module):
     def __init__(self, model, device_ids = None):
@@ -221,7 +222,7 @@ class DeepSpeech(nn.Module):
                 tmp *= x
             params += tmp
         return params
-        
+
     @staticmethod
     def summarize_parameters(model):
         for name, p in model.named_parameters():
