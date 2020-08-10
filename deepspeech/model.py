@@ -271,7 +271,7 @@ class CollapseDim(nn.Module):
         return x
 
 class DeepSpeechSimple(nn.Module):
-    def __init__(self, rnn_hidden_size, fc_hidden_size = 128, sample_rate=audio_conf['sample_rate'], window_size=audio_conf['window_size']):
+    def __init__(self, rnn_hidden_size, fc_hidden_size = 256, sample_rate=audio_conf['sample_rate'], window_size=audio_conf['window_size']):
         super().__init__()
 
         self.sample_rate = sample_rate
