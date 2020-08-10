@@ -29,6 +29,7 @@ parser.add_argument('--adversarial', action='store_true',
 
 LOG_DIR = 'logs'
 SAVE_TXT_FILE = 'word_preds'
+SAVE_SUMMARY_FILE = 'summary_stats'
 RESULTS_DIR = 'results'
 
 def evaluate(test_loader, device, model, decoder, target_decoder, save_output=False):
@@ -223,4 +224,9 @@ if __name__ == '__main__':
 
 
     save_word_preds_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_TXT_FILE + "_" + args.id + ".csv"
+    save_summary_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_SUMMARY_FILE + "_" + args.id + ".csv"
     np.savetxt(save_word_preds_file, output_text, fmt="%s", delimiter=",")
+    with open(save_summary_file, "r") as file:
+        file.write('Test Summary \t'
+              'Average WER {wer:.3f}\t'
+              'Average CER {cer:.3f}\t'.format(wer=wer, cer=cer))
