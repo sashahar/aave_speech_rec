@@ -51,6 +51,8 @@ parser.add_argument('--ngpu', type = int, default = 1,
                     help='Number of GPUs to use during training.  a number larger than 1 parallelizes training.')
 parser.add_argument('--num-workers', type = int, default = 0,
                     help='Number of workers to use in DataLoader.  default value of 0 signifies no parallelism.')
+parser.add_argument('--num-layers', type = int, default = 4,
+                    help='Number of RNN layers to use in DeepSpeech architecture.  default value of 4 aligns with experiments so far.')
 
 
 MODEL_SAVE_DIR = 'models'
@@ -120,7 +122,7 @@ if __name__ == '__main__':
         args.hidden_dim = hidden_dim
         print("previous avg loss is : ", avg_loss)
     else:
-        model = DeepSpeech(args.hidden_dim, use_mfcc_features = args.use_mfcc_features)
+        model = DeepSpeech(args.hidden_dim, use_mfcc_features = args.use_mfcc_features, nb_layers= args.num_layers)
     # if args.pretrained:  # Starting from previous model
     #     optim_state = None
     #     start_epoch = 0
