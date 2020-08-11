@@ -228,7 +228,7 @@ if __name__ == '__main__':
     print('Saving predictions to: {}'.format(save_word_preds_file))
     np.savetxt(save_word_preds_file, output_text, fmt="%s", delimiter=",")
     print('Saving summary stats to: {}'.format(save_summary_file))
-    with open(save_summary_file, "r") as file:
+    with open(save_summary_file, "w") as file:
         file.write('Test Summary \t'
               'Average WER {wer:.3f}\t'
               'Average CER {cer:.3f}\t'.format(wer=wer, cer=cer))
