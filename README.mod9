@@ -1,0 +1,39 @@
+This README contains a log of things I (Elliot) whipped up to decode
+the segments generated with this code with the Mod9 engine and score
+it using the code here.
+
+`process_data_coraal_mod9.py` is copied from `process_data_coraal.py`
+and modified to ingest data according to the directory structure of
+the data on our machines. I used this to generate a top-level
+`data_processed` directory of all the audio segments.
+
+`mod9/` contains scripts I used to decode the audio and score the
+results.
+
+# Data-prep
+I ran something like `./process_data_coraal.py /path/to/data
+data_processed` to create all the segments and their transcripts in
+`data_processed`.
+
+# Decode and Scoring
+1. First I run `decode_audio_mod9.py` to generate a `.jsons` file
+containing newline-separated JSONs of the output from the mod9
+engine. To evaluate on the CORAAL test set, I just ran the segments
+listed in the manifest through the engine with something like this:
+`./decode_audio_mod9.py --host $HOST --port $PORT --num-threads $NTHREADS ../manifests/coraal_test_manifest.csv coraal-test-results.jsons`
+1. Then I run `generate_csv_onebest.py`
+to generate a CSV file with the reference transcript and the mod9
+output. I run it with something like this:
+`./generate_csv_onebest ../data_processed coraal-test-results.jsons coraal-test-results.csv`
+1. Finally I run `score_mod9_results.py` to calculate the WER and CER,
+passing the resultant csv from the previous step. In this script, I
+copied over relevant code from `deepspeech/{test.py,decoder.py}` to
+score the results, specifically the `wer()` and `cer()` functions.
+
+# Notes
+* The model I trained on July 18, 2020, scored an **average WER of
+  0.291254** and **Average CER: 0.205778** according to the code
+  above.
+* Decoding the CORAAL test set with our production 16k model and
+  scoring the results yielded an **average WER of 0.367523** and an
+  **average CER of 0.281156**.
