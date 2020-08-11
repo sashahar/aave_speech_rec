@@ -20,7 +20,8 @@ parser.add_argument('--batch-size', default=20, type=int, help='Batch size for t
 parser.add_argument('--num-workers', default=4, type=int, help='Number of workers used in dataloading')
 parser.add_argument('--model-path', default='models/deepspeech_final.pth', help='Path to model file created by training')
 parser.add_argument('--cuda', action="store_true", help='Use cuda')
-parser.add_argument('--id', type=str, help='Unique identifier')
+parser.add_argument('--model-id', type=str, help='Model identifier')
+parser.add_argument('--eval-id', type=str, help='Unique identifier for evaluation')
 parser.add_argument('--char-vocab-path', default="character_vocab.json", help='Contains all characters for transcription')
 parser.add_argument('--beam-decode', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
@@ -185,7 +186,7 @@ def load_saved_model(args):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    LOG_DIR = args.log_file_path + args.id
+    LOG_DIR = args.log_file_path + args.model_id
 
     torch.set_grad_enabled(False)
     device = torch.device("cuda" if args.cuda else "cpu")
@@ -224,5 +225,5 @@ if __name__ == '__main__':
 
 
 
-    save_word_preds_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_TXT_FILE + "_" + args.id + ".csv"
+    save_word_preds_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_TXT_FILE + "_" + args.eval_id + ".csv"
     np.savetxt(save_word_preds_file, output_text, fmt="%s", delimiter=",")
