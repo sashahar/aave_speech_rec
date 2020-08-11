@@ -26,8 +26,8 @@ parser.add_argument('--beam-decode', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 parser.add_argument('--adversarial', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
+parser.add_argument('--log-file-path', default='/juice/scr/cpajot/logs/', help='Filepath to save logs')
 
-LOG_DIR = 'logs'
 SAVE_TXT_FILE = 'word_preds'
 RESULTS_DIR = 'results'
 
@@ -185,6 +185,8 @@ def load_saved_model(args):
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    LOG_DIR = args.log_file_path + args.id
+
     torch.set_grad_enabled(False)
     device = torch.device("cuda" if args.cuda else "cpu")
     print("Using device: ", device)
