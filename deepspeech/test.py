@@ -225,5 +225,5 @@ if __name__ == '__main__':
 
 
 
-    save_word_preds_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_TXT_FILE + "_" + args.eval_id + ".csv"
+    save_word_preds_file = LOG_DIR + "/" + SAVE_TXT_FILE + "_" + args.eval_id + ".csv"
     np.savetxt(save_word_preds_file, output_text, fmt="%s", delimiter=",")
