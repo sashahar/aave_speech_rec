@@ -224,7 +224,7 @@ if __name__ == '__main__':
 
 
     save_word_preds_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_TXT_FILE + "_" + args.id + ".csv"
-    save_summary_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_SUMMARY_FILE + "_" + args.id + ".csv"
+    save_summary_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_SUMMARY_FILE + "_" + args.id + ".txt"
     np.savetxt(save_word_preds_file, output_text, fmt="%s", delimiter=",")
     with open(save_summary_file, "r") as file:
         file.write('Test Summary \t'
