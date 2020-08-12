@@ -1,6 +1,7 @@
-# from train import load_saved_model
+from train import load_saved_model
 # from model import DeepSpeech
 import argparse
+import os
 
 parser = argparse.ArgumentParser(description='Model Checkpoint Conversion')
 parser.add_argument('--checkpoint-src', default='',
