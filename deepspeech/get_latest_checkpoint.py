@@ -2,6 +2,7 @@
 # from model import DeepSpeech
 import argparse
 
+parser = argparse.ArgumentParser(description='Model Checkpoint Conversion')
 parser.add_argument('--checkpoint-src', default='',
                     help='Absolute to checkpoint that you would like to convert to latest checkpoint format')
 
