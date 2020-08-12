@@ -119,11 +119,11 @@ if __name__ == '__main__':
     device = torch.device("cuda" if args.cuda else "cpu")
     print('using device: {}'.format(device))
 
-    args.log_dir += args.id
+    args.log_dir += "/" + args.id
 
     start_epoch, start_iter, optim_state = 0, 0, None
 
-    prev_checkpoint_path = args.log_dir +  "/" + save_model_params_file_latest
+    prev_checkpoint_path = args.log_dir + save_model_params_file_latest
     print(prev_checkpoint_path)
     if os.path.exists(prev_checkpoint_path):
         print("Loading checkpoint from: {}".format(prev_checkpoint_path))
