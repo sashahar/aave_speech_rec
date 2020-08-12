@@ -122,8 +122,8 @@ if __name__ == '__main__':
     print('using device: {}'.format(device))
 
     start_epoch, start_iter, optim_state = 0, 0, None
-    if os.path.exists(prev_checkpoint_path):
-        print("Loading checkpoint from: {}".format(prev_checkpoint_path))
+    if os.path.exists(save_model_params_file_latest):
+        print("Loading checkpoint from: {}".format(save_model_params_file_latest))
         model, optim_state, start_epoch, avg_loss, hidden_dim = load_saved_model(save_model_params_file_latest)
         args.hidden_dim = hidden_dim
         print("previous avg loss is : ", avg_loss)
