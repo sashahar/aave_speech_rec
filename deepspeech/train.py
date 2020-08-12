@@ -104,6 +104,8 @@ if __name__ == '__main__':
     torch.cuda.manual_seed_all(args.seed)
     torch.backends.cudnn.deterministic = True
 
+    args.log_dir += "/" + args.id
+
     loss_log_file = args.log_dir + "/" + LOG_FILE + "_loss.csv"
     temp_high_loss_file = args.log_dir + "/" +  "high_loss_examples.csv"
     cer_wer_log_file = args.log_dir + "/" + LOG_FILE + "_er.csv"
@@ -119,15 +121,10 @@ if __name__ == '__main__':
     device = torch.device("cuda" if args.cuda else "cpu")
     print('using device: {}'.format(device))
 
-    args.log_dir += "/" + args.id
-
     start_epoch, start_iter, optim_state = 0, 0, None
-
-    prev_checkpoint_path = args.log_dir + save_model_params_file_latest
-    print(prev_checkpoint_path)
     if os.path.exists(prev_checkpoint_path):
         print("Loading checkpoint from: {}".format(prev_checkpoint_path))
-        model, optim_state, start_epoch, avg_loss, hidden_dim = load_saved_model(prev_checkpoint_path)
+        model, optim_state, start_epoch, avg_loss, hidden_dim = load_saved_model(save_model_params_file_latest)
         args.hidden_dim = hidden_dim
         print("previous avg loss is : ", avg_loss)
     else:
