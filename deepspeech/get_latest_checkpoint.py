@@ -1,11 +1,12 @@
-from train import load_saved_model
-from model import DeepSpeech
+# from train import load_saved_model
+# from model import DeepSpeech
 import argparse
 
 parser.add_argument('--checkpoint-src', default='',
                     help='Absolute to checkpoint that you would like to convert to latest checkpoint format')
 
 if __name__ == '__main__':
+    print("HERE")
 
     args = parser.parse_args()
     if args.checkpoint_src == '' or not os.path.exists(args.checkpoint_src):
