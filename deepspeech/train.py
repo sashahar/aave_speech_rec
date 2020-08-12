@@ -124,7 +124,9 @@ if __name__ == '__main__':
     start_epoch, start_iter, optim_state = 0, 0, None
 
     prev_checkpoint_path = args.log_dir +  "/" + save_model_params_file_latest
+    print(prev_checkpoint_path)
     if os.path.exists(prev_checkpoint_path):
+        print("Loading checkpoint from: {}".format(prev_checkpoint_path))
         model, optim_state, start_epoch, avg_loss, hidden_dim = load_saved_model(prev_checkpoint_path)
         args.hidden_dim = hidden_dim
         print("previous avg loss is : ", avg_loss)
