@@ -191,7 +191,7 @@ class DeepSpeech(nn.Module):
         return seq_len.int()
 
     @staticmethod
-    def serialize(model, optimizer=None, epoch=None, iteration=None, loss_results=None,
+    def serialize(model, optimizer=None, epoch=None, loss_results=None,
                   cer_results=None, wer_results=None, avg_loss=None):
         package = {
             'hidden_size': model.rnn_hidden_size,
@@ -206,9 +206,7 @@ class DeepSpeech(nn.Module):
         if avg_loss is not None:
             package['avg_loss'] = avg_loss
         if epoch is not None:
-            package['epoch'] = epoch + 1  # increment for readability
-        if iteration is not None:
-            package['iteration'] = iteration
+            package['epoch'] = epoch  # increment for readability
         if loss_results is not None:
             package['loss_results'] = loss_results
             package['cer_results'] = cer_results
