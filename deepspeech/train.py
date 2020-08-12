@@ -51,6 +51,7 @@ parser.add_argument('--ngpu', type = int, default = 1,
                     help='Number of GPUs to use during training.  a number larger than 1 parallelizes training.')
 parser.add_argument('--no-eval', dest='noeval', action='store_true', help='No evaluation')
 parser.add_argument('--log-file-path', default='/juice/scr/cpajot/logs/', help='Filepath to save logs')
+parser.add_argument('--nlayers', type = int, default = 4, help='Number of layers in RNN.')
 
 MODEL_SAVE_DIR = 'models'
 LOG_FILE = 'log'
@@ -118,7 +119,7 @@ if __name__ == '__main__':
         args.hidden_dim = hidden_dim
         print("previous avg loss is : ", avg_loss)
     else:
-        model = DeepSpeech(args.hidden_dim, use_mfcc_features = args.use_mfcc_features)
+        model = DeepSpeech(args.hidden_dim, use_mfcc_features = args.use_mfcc_features, nb_layers = args.nlayers)
     # if args.pretrained:  # Starting from previous model
     #     optim_state = None
     #     start_epoch = 0
