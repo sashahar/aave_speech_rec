@@ -1,4 +1,4 @@
-from train import *
+from train import load_saved_model
 from model import DeepSpeech
 import argparse
 
@@ -12,7 +12,7 @@ if __name__ == '__main__':
         sys.exit('You must specify a valid checkpoint src path')
 
 
-    print("Loading checkpoint from: {}".format(save_model_params_file_latest))
+    print("Loading checkpoint from: {}".format(args.checkpoint_src))
     model, optim_state, epoch, avg_loss, hidden_dim = load_saved_model(save_model_params_file_latest)
     print("Previous checkpoint saved at epoch: ", epoch - 1)
 
