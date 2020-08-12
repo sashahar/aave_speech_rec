@@ -111,6 +111,7 @@ class DeepSpeech(nn.Module):
         self.rnn_hidden_size = rnn_hidden_size
         self.window_size = window_size
         self.use_mfcc_features = use_mfcc_features
+        self.nb_layers = nb_layers
 
         self.conv = MaskConv(nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=(41, 11), stride=(2, 2), padding=(20, 5)),
@@ -197,6 +198,7 @@ class DeepSpeech(nn.Module):
             'sample_rate': model.sample_rate,
             'window_size': model.window_size,
             'use_mfcc_features': model.use_mfcc_features,
+            'nb_layers': model.nb_layers,
             'state_dict': model.state_dict(),
         }
         if optimizer is not None:
@@ -235,10 +237,12 @@ class DeepSpeech(nn.Module):
     @classmethod
     def load_model_package(cls, package):
         mfcc = package.get('use_mfcc_features', False)
+        nb_layers = package.get('nb_layers', 4)
         model = cls(rnn_hidden_size=package['hidden_size'],
                     use_mfcc_features = mfcc,
-                        sample_rate= package['sample_rate'],
-                        window_size=package['window_size'])
+                    nb_layers = nb_layers,
+                    sample_rate= package['sample_rate'],
+                    window_size=package['window_size'])
         model.load_state_dict(package['state_dict'])
         return model
 
