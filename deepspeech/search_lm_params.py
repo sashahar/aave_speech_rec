@@ -50,7 +50,8 @@ if __name__ == '__main__':
 	    sys.exit(1)
 
 	with open(args.char_vocab_path) as label_file:
-        characters = str(''.join(json.load(label_file)))
+		characters = str(''.join(json.load(label_file)))
+    
     decoder = BeamCTCDecoder(characters, lm_path=args.lm_path, beam_width=beam_width)
 
 	saved_output = torch.load(args.saved_output)
