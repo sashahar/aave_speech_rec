@@ -69,9 +69,6 @@ if __name__ == '__main__':
 		for beta in cand_betas]
 
 	scores = []
-	for params in tqdm(params_grid, total=len(params_grid)):
-		decode_results = decode_dataset(params, decoder, saved_output)
-		scores.append(list(decode_results))
 
 	for params in tqdm(p.imap(decode_dataset, params_grid), total=len(params_grid)):
 		scores.append(list(params))
