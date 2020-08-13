@@ -7,7 +7,6 @@ import json
 
 from dataloader import AudioDataLoader, AudioDataset, BucketingSampler
 from decoder import GreedyDecoder, BeamCTCDecoder
-from model import DeepSpeech
 
 parser = argparse.ArgumentParser(description='DeepSpeech testing')
 parser.add_argument('--test-manifest', metavar='DIR',
@@ -29,11 +28,18 @@ parser.add_argument('--adversarial', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 parser.add_argument('--log-dir', default='logs',
                     help='Specify absolute path to log directory.  Relative paths will originate in deepspeech dir.')
+parser.add_argument('--mfcc', action="store_true", help='Use cuda')
 
 SAVE_TXT_FILE = 'word_preds.csv'
 SAVE_SUMMARY_FILE = 'summary_stats.csv'
 SAVE_OUTPUT_FILE = 'output_data.csv'
 RESULTS_DIR = 'results'
+
+args = parser.parse_args()
+if args.mfcc:
+    from model_mfcc import DeepSpeech
+else:
+    from model import DeepSpeech
 
 def evaluate(test_loader, device, model, decoder, target_decoder, save_output=False):
     model.eval()
@@ -188,7 +194,6 @@ def load_saved_model(args):
     return model, optim_state, start_epoch, start_iter, avg_loss
 
 if __name__ == '__main__':
-    args = parser.parse_args()
     torch.set_grad_enabled(False)
     device = torch.device("cuda" if args.cuda else "cpu")
     print("Using device: ", device)
