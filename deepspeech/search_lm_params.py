@@ -5,6 +5,7 @@ import torch
 from tqdm import tqdm
 import json
 import sys
+from multiprocessing.pool import Pool
 
 from decoder import GreedyDecoder, BeamCTCDecoder
 
@@ -23,12 +24,12 @@ parser.add_argument('--num-workers', default=16, type=int, help='Number of paral
 
 args = parser.parse_args()
 
-	if args.lm_path is None:
-		print("error: LM must be provided for tuning")
-		sys.exit(1)
+if args.lm_path is None:
+	print("error: LM must be provided for tuning")
+	sys.exit(1)
 
-	with open(args.char_vocab_path) as label_file:
-		characters = str(''.join(json.load(label_file)))
+with open(args.char_vocab_path) as label_file:
+	characters = str(''.join(json.load(label_file)))
 
 saved_output = torch.load(args.saved_output)
 
@@ -60,7 +61,7 @@ def decode_dataset(params):
 
 if __name__ == '__main__':
 
-    p = Pool(args.num_workers, init, [characters, characters.index('_'), args.lm_path])
+	p = Pool(args.num_workers, init, [characters, characters.index('_'), args.lm_path])
 
 	cand_alphas = np.linspace(args.lm_alpha_from, args.lm_alpha_to, args.lm_num_alphas)
 	cand_betas = np.linspace(args.lm_beta_from, args.lm_beta_to, args.lm_num_betas)
