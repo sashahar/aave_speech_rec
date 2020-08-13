@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 import json
+import sys
 
 from decoder import GreedyDecoder, BeamCTCDecoder
 
