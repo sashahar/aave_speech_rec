@@ -36,12 +36,6 @@ SAVE_SUMMARY_FILE = 'summary_stats'
 SAVE_OUTPUT_FILE = 'output_data'
 RESULTS_DIR = 'results'
 
-args = parser.parse_args()
-if args.mfcc:
-    from model_mfcc import DeepSpeech
-else:
-    from model import DeepSpeech
-
 def evaluate(test_loader, device, model, decoder, target_decoder, save_output=False):
     model.eval()
     total_cer, total_wer, num_tokens, num_chars = 0, 0, 0, 0
@@ -195,6 +189,11 @@ def load_saved_model(args):
     return model, optim_state, start_epoch, start_iter, avg_loss
 
 if __name__ == '__main__':
+    args = parser.parse_args()
+    if args.mfcc:
+        from model_mfcc import DeepSpeech
+    else:
+        from model import DeepSpeech
     torch.set_grad_enabled(False)
     device = torch.device("cuda" if args.cuda else "cpu")
     print("Using device: ", device)
@@ -249,4 +248,3 @@ if __name__ == '__main__':
               'Average CER {cer:.3f}\t'.format(wer=wer, cer=cer))
     print('Saving output data to: {}'.format(save_output_file))
     torch.save(output_data, save_output_file)
-
