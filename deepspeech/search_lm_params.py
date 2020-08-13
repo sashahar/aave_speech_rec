@@ -5,6 +5,7 @@ import torch
 from tqdm import tqdm
 import json
 import sys
+from multiprocessing.pool import Pool
 
 from decoder import GreedyDecoder, BeamCTCDecoder
 
