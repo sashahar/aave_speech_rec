@@ -61,7 +61,7 @@ def decode_dataset(params):
 
 if __name__ == '__main__':
 
-    p = Pool(args.num_workers, init, [characters, characters.index('_'), args.lm_path])
+	p = Pool(args.num_workers, init, [characters, characters.index('_'), args.lm_path])
 
 	cand_alphas = np.linspace(args.lm_alpha_from, args.lm_alpha_to, args.lm_num_alphas)
 	cand_betas = np.linspace(args.lm_beta_from, args.lm_beta_to, args.lm_num_betas)
