@@ -26,7 +26,7 @@ def decode_dataset(params, decoder, saved_output):
 
 	total_cer, total_wer, num_tokens, num_chars = 0, 0, 0, 0
 	for out, sizes, target_strings in saved_output:
-		decoded_output, _, = decoder.decode(torch.from_numpy(out), sizes)
+		decoded_output, _, = decoder.decode(torch.from_numpy(out), torch.from_numpy(sizes))
 		for x in range(len(target_strings)):
 			transcript, reference = decoded_output[x][0], target_strings[x][0]
 			wer_inst = decoder.wer(transcript, reference)
