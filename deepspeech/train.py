@@ -178,8 +178,6 @@ if __name__ == '__main__':
 
     if not os.path.exists(args.log_dir):
         os.mkdir(args.log_dir)
-
-    if not args.continue_from:
         np.savetxt(loss_log_file, np.array(
             ['epoch,loss']), fmt="%s", delimiter=",")
         np.savetxt(temp_high_loss_file, np.array(
