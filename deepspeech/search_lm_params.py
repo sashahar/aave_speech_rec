@@ -44,6 +44,9 @@ def decode_dataset(params, decoder, saved_output):
 if __name__ == '__main__':
 	args = parser.parse_args()
 
+	print(args.lm_path)
+	print(args)
+
 	if args.lm_path is None:
 		print("error: LM must be provided for tuning")
 		sys.exit(1)
