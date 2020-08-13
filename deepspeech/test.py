@@ -238,7 +238,8 @@ if __name__ == '__main__':
     save_output_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_OUTPUT_FILE + "_" + args.eval_id + ".csv"
 
     if not os.path.exists(args.log_dir + "/" + RESULTS_DIR):
-        os.mkdir(args.log_dir)
+        os.mkdir(args.log_dir  + "/" + RESULTS_DIR)
+        
     print('Saving predictions to: {}'.format(save_word_preds_file))
     np.savetxt(save_word_preds_file, output_text, fmt="%s", delimiter=",")
     print('Saving summary stats to: {}'.format(save_summary_file))
