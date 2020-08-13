@@ -21,15 +21,18 @@ parser.add_argument('--num-workers', default=4, type=int, help='Number of worker
 parser.add_argument('--model-path', default='models/deepspeech_final.pth', help='Path to model file created by training')
 parser.add_argument('--cuda', action="store_true", help='Use cuda')
 parser.add_argument('--id', type=str, help='Unique identifier')
+parser.add_argument('--eval-id', type=str, help='Unique identifier for evaluation run')
 parser.add_argument('--char-vocab-path', default="character_vocab.json", help='Contains all characters for transcription')
 parser.add_argument('--beam-decode', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 parser.add_argument('--adversarial', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
+parser.add_argument('--log-dir', default='logs',
+                    help='Specify absolute path to log directory.  Relative paths will originate in deepspeech dir.')
 
-LOG_DIR = 'logs'
-SAVE_TXT_FILE = 'word_preds'
-SAVE_SUMMARY_FILE = 'summary_stats'
+SAVE_TXT_FILE = 'word_preds.csv'
+SAVE_SUMMARY_FILE = 'summary_stats.csv'
+SAVE_OUTPUT_FILE = 'output_data.csv'
 RESULTS_DIR = 'results'
 
 def evaluate(test_loader, device, model, decoder, target_decoder, save_output=False):
@@ -222,9 +225,12 @@ if __name__ == '__main__':
               'Average CER {cer:.3f}\t'.format(wer=wer, cer=cer))
 
 
+    args.log_dir += "/" + args.id
 
-    save_word_preds_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_TXT_FILE + "_" + args.id + ".csv"
-    save_summary_file = LOG_DIR + "/" + RESULTS_DIR  + "/"+ SAVE_SUMMARY_FILE + "_" + args.id + ".txt"
+    save_word_preds_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_TXT_FILE + "_" + args.eval_id  ".csv"
+    save_summary_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_SUMMARY_FILE + "_" + args.eval_id  ".csv"
+    save_output_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_OUTPUT_FILE + "_" + args.eval_id  ".csv"
+
     print('Saving predictions to: {}'.format(save_word_preds_file))
     np.savetxt(save_word_preds_file, output_text, fmt="%s", delimiter=",")
     print('Saving summary stats to: {}'.format(save_summary_file))
@@ -232,3 +238,6 @@ if __name__ == '__main__':
         file.write('Test Summary \t'
               'Average WER {wer:.3f}\t'
               'Average CER {cer:.3f}\t'.format(wer=wer, cer=cer))
+    print('Saving output data to: {}'.format(save_output_file))
+    torch.save(output_data, save_output_file)
+
