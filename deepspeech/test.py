@@ -227,9 +227,9 @@ if __name__ == '__main__':
 
     args.log_dir += "/" + args.id
 
-    save_word_preds_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_TXT_FILE + "_" + args.eval_id  ".csv"
-    save_summary_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_SUMMARY_FILE + "_" + args.eval_id  ".csv"
-    save_output_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_OUTPUT_FILE + "_" + args.eval_id  ".csv"
+    save_word_preds_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_TXT_FILE + "_" + args.eval_id + ".csv"
+    save_summary_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_SUMMARY_FILE + "_" + args.eval_id + ".csv"
+    save_output_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_OUTPUT_FILE + "_" + args.eval_id + ".csv"
 
     print('Saving predictions to: {}'.format(save_word_preds_file))
     np.savetxt(save_word_preds_file, output_text, fmt="%s", delimiter=",")
