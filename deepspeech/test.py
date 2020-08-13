@@ -4,10 +4,10 @@ import numpy as np
 import torch
 from tqdm import tqdm
 import json
+import os
 
 from dataloader import AudioDataLoader, AudioDataset, BucketingSampler
 from decoder import GreedyDecoder, BeamCTCDecoder
-from model import DeepSpeech
 
 parser = argparse.ArgumentParser(description='DeepSpeech testing')
 parser.add_argument('--test-manifest', metavar='DIR',
@@ -29,11 +29,18 @@ parser.add_argument('--adversarial', action='store_true',
                     help='Type of decoder to use in model evaluation: Options are greedy decoding and beam search decoding.')
 parser.add_argument('--log-dir', default='logs',
                     help='Specify absolute path to log directory.  Relative paths will originate in deepspeech dir.')
+parser.add_argument('--mfcc', action="store_true", help='Use cuda')
 
-SAVE_TXT_FILE = 'word_preds.csv'
-SAVE_SUMMARY_FILE = 'summary_stats.csv'
-SAVE_OUTPUT_FILE = 'output_data.csv'
+SAVE_TXT_FILE = 'word_preds'
+SAVE_SUMMARY_FILE = 'summary_stats'
+SAVE_OUTPUT_FILE = 'output_data'
 RESULTS_DIR = 'results'
+
+args = parser.parse_args()
+if args.mfcc:
+    from model_mfcc import DeepSpeech
+else:
+    from model import DeepSpeech
 
 def evaluate(test_loader, device, model, decoder, target_decoder, save_output=False):
     model.eval()
@@ -188,7 +195,6 @@ def load_saved_model(args):
     return model, optim_state, start_epoch, start_iter, avg_loss
 
 if __name__ == '__main__':
-    args = parser.parse_args()
     torch.set_grad_enabled(False)
     device = torch.device("cuda" if args.cuda else "cpu")
     print("Using device: ", device)
@@ -231,6 +237,8 @@ if __name__ == '__main__':
     save_summary_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_SUMMARY_FILE + "_" + args.eval_id + ".csv"
     save_output_file = args.log_dir + "/" + RESULTS_DIR  + "/"+ SAVE_OUTPUT_FILE + "_" + args.eval_id + ".csv"
 
+    if not os.path.exists(args.log_dir + "/" + RESULTS_DIR):
+        os.mkdir(args.log_dir)
     print('Saving predictions to: {}'.format(save_word_preds_file))
     np.savetxt(save_word_preds_file, output_text, fmt="%s", delimiter=",")
     print('Saving summary stats to: {}'.format(save_summary_file))
@@ -239,5 +247,6 @@ if __name__ == '__main__':
               'Average WER {wer:.3f}\t'
               'Average CER {cer:.3f}\t'.format(wer=wer, cer=cer))
     print('Saving output data to: {}'.format(save_output_file))
+
     torch.save(output_data, save_output_file)
 
