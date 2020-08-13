@@ -24,12 +24,12 @@ parser.add_argument('--num-workers', default=16, type=int, help='Number of paral
 
 args = parser.parse_args()
 
-	if args.lm_path is None:
-		print("error: LM must be provided for tuning")
-		sys.exit(1)
+if args.lm_path is None:
+	print("error: LM must be provided for tuning")
+	sys.exit(1)
 
-	with open(args.char_vocab_path) as label_file:
-		characters = str(''.join(json.load(label_file)))
+with open(args.char_vocab_path) as label_file:
+	characters = str(''.join(json.load(label_file)))
 
 saved_output = torch.load(args.saved_output)
 
