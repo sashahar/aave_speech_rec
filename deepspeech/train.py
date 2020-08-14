@@ -179,7 +179,7 @@ if __name__ == '__main__':
     save_model_params_file_val_best = LOG_DIR + "/" + SAVE_MODEL_PARAMS + "_val_best.pth"
     save_model_params_file_train_best = LOG_DIR + "/" + SAVE_MODEL_PARAMS + "_train_best.pth"
 
-    if os.path.exists(save_model_params_file_latest):
+    if not os.path.exists(save_model_params_file_latest):
         np.savetxt(loss_log_file, np.array(
             ['epoch,loss']), fmt="%s", delimiter=",")
         np.savetxt(temp_high_loss_file, np.array(
