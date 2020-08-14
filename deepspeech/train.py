@@ -78,23 +78,17 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def load_saved_model(args):
-    print("Loading checkpoint model %s" % args.continue_from)
-    package = torch.load(args.continue_from,
+def load_saved_model(model_path):
+    print("Loading checkpoint model %s" % model_path)
+    package = torch.load(model_path,
                          map_location=lambda storage, loc: storage)
     model = DeepSpeech.load_model_package(package)
 
     # if not args.finetune:  # Don't want to restart training
     optim_state = package['optim_dict']
-    start_epoch = int(package.get('epoch', 1)) - \
-        1  # Index start at 0 for training
+    start_epoch = int(package.get('epoch', 1))  # Index start at 0 for training
     start_iter = package.get('iteration', None)
-    if start_iter is None:
-        # We saved model after epoch finished, start at the next epoch.
-        start_epoch += 1
-        start_iter = 0
-    else:
-        start_iter += 1
+
     avg_loss = package.get('avg_loss', 0)
     hidden_dim = package.get('hidden_size', None)
     return model, optim_state, start_epoch, start_iter, avg_loss, hidden_dim
@@ -111,11 +105,12 @@ if __name__ == '__main__':
     device = torch.device("cuda" if args.cuda else "cpu")
     print('using device: {}'.format(device))
 
-    LOG_DIR = args.log_file_path + args.id
+    LOG_DIR = args.log_file_path + args.id 
+    save_model_params_file_latest = LOG_DIR + "/" + SAVE_MODEL_PARAMS + "_latest.pth"
 
     start_epoch, start_iter, optim_state = 0, 0, None
-    if args.continue_from:  # Starting from previous model
-        model, optim_state, start_epoch, _, avg_loss, hidden_dim = load_saved_model(args)
+    if os.path.exists(save_model_params_file_latest): # Starting from previous model
+        model, optim_state, start_epoch, _, avg_loss, hidden_dim = load_saved_model(save_model_params_file_latest)
         args.hidden_dim = hidden_dim
         print("previous avg loss is : ", avg_loss)
     else:
@@ -184,7 +179,7 @@ if __name__ == '__main__':
     save_model_params_file_val_best = LOG_DIR + "/" + SAVE_MODEL_PARAMS + "_val_best.pth"
     save_model_params_file_train_best = LOG_DIR + "/" + SAVE_MODEL_PARAMS + "_train_best.pth"
 
-    if not args.continue_from:
+    if os.path.exists(save_model_params_file_latest):
         np.savetxt(loss_log_file, np.array(
             ['epoch,loss']), fmt="%s", delimiter=",")
         np.savetxt(temp_high_loss_file, np.array(
@@ -256,6 +251,12 @@ if __name__ == '__main__':
         with open(loss_log_file, "a") as file:
             file.write("{},{}\n".format(epoch, avg_loss))
 
+        print("Saving checkpoint model to %s" % save_model_params_file_latest)  
+        torch.save(DeepSpeech.serialize(model, optimizer=optimizer, epoch=epoch,    
+                                        loss_results=loss_results,  
+                                        wer_results=wer_dev_results, cer_results=cer_dev_results, avg_loss=avg_loss),   
+                                        save_model_params_file_latest)
+        
         if epoch % 5 == 0 and not args.noeval:
             with torch.no_grad():
                 train_wer, train_cer, out_train_data, out_train_text = evaluate(test_loader=train_eval_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
