@@ -55,7 +55,7 @@ def decode_dataset(params):
 
 if __name__ == '__main__':
 
-	decoder = BeamCTCDecoder(characters, lm_path=lm_path,  blank_index=characters.index('_'))
+	decoder = BeamCTCDecoder(characters, lm_path=args.lm_path,  blank_index=characters.index('_'))
 
 	cand_alphas = np.linspace(args.lm_alpha_from, args.lm_alpha_to, args.lm_num_alphas)
 	cand_betas = np.linspace(args.lm_beta_from, args.lm_beta_to, args.lm_num_betas)
