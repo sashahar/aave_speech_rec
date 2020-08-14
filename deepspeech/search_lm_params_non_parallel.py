@@ -33,7 +33,6 @@ saved_output = torch.load(args.saved_output)
 
 def decode_dataset(params):
 	lm_alpha, lm_beta = params
-	global decoder
 	decoder._decoder.reset_params(lm_alpha, lm_beta)
 
 	total_cer, total_wer, num_tokens, num_chars = 0, 0, 0, 0
