@@ -31,7 +31,7 @@ with open(args.char_vocab_path) as label_file:
 
 saved_output = torch.load(args.saved_output)
 
-def decode_dataset(params):
+def decode_dataset(params, decoder):
 	lm_alpha, lm_beta = params
 	decoder._decoder.reset_params(lm_alpha, lm_beta)
 
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 	scores = []
 
 	for params in tqdm(params_grid, total=len(params_grid)):
-		decode_scores = decode_dataset(params)
+		decode_scores = decode_dataset(params, decoder)
 		scores.append(list(decode_scores))
 
 	print("Saving tuning results to: {}".format(args.output_path))
