@@ -6,7 +6,7 @@ import json
 import os
 import numpy as np
 
-from model import DeepSpeech, CustomDataParallel
+from model_v2 import DeepSpeech, CustomDataParallel
 from dataloader import AudioDataLoader, AudioDataset, BucketingSampler
 from decoder import GreedyDecoder, BeamCTCDecoder
 from test import evaluate

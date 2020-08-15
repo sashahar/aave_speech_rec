@@ -77,10 +77,8 @@ class BatchRNN(nn.Module):
         #TxNxH (seq_len, batch, feature_dim)
         if self.batch_norm is not None:
             x = self.batch_norm(x)
-        print("In Batch RNN X has shape: ", x.shape)
         x = nn.utils.rnn.pack_padded_sequence(x, output_lengths, batch_first=True)
         self.rnn.flatten_parameters()
-        print("After pack padded sequence x has shape: ", x.shape)
         x, h = self.rnn(x)
         x, _ = nn.utils.rnn.pad_packed_sequence(x, batch_first=True, total_length = total_length)
         if self.bidirectional:
