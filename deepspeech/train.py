@@ -93,7 +93,7 @@ def load_saved_model(model_path):
     start_epoch = int(package.get('epoch', 0)) + 1 #Start at following epoch
     avg_loss = package.get('avg_loss', 0)
     hidden_dim = package.get('hidden_size', None)
-    return model, optim_state, start_epoch, avg_loss, hidden_dim, package
+    return model, optim_state, start_epoch, avg_loss, hidden_dim
 
 
 if __name__ == '__main__':
@@ -124,11 +124,8 @@ if __name__ == '__main__':
     start_epoch, start_iter, optim_state = 0, 0, None
     if os.path.exists(save_model_params_file_latest):
         print("Loading checkpoint from: {}".format(save_model_params_file_latest))
-        model, optim_state, start_epoch, avg_loss, hidden_dim, package = load_saved_model(save_model_params_file_latest)
+        model, optim_state, start_epoch, avg_loss, hidden_dim = load_saved_model(save_model_params_file_latest)
         args.hidden_dim = hidden_dim
-        loss_results = package.get("loss_results", [])
-        cer_dev_results = package.get("cer_results", [])
-        wer_dev_results = package.get("wer_results", [])
         print("previous avg loss is : ", avg_loss)
     else:
         model = DeepSpeech(args.hidden_dim, use_mfcc_features = args.use_mfcc_features, nb_layers= args.num_layers)
@@ -174,7 +171,7 @@ if __name__ == '__main__':
         optimizer.load_state_dict(optim_state)
 
     #loss_results, wer_results = torch.Tensor(args.epochs), torch.Tensor(args.epochs)
-    wer_train_results, cer_train_results = [], []
+    loss_results, wer_dev_results, cer_dev_results, wer_train_results, cer_train_results = [], [], [], [], []
     batch_time = AverageMeter()
     losses = AverageMeter()
     ctc_loss = nn.CTCLoss()
@@ -187,7 +184,8 @@ if __name__ == '__main__':
             ['epoch,iter,loss,example']), fmt="%s", delimiter=",")
         np.savetxt(cer_wer_log_file, np.array(
             ['epoch,loss,train_cer,train_wer, dev_cer,dev_wer']), fmt="%s", delimiter=",")
-        loss_results, wer_dev_results, cer_dev_results = [], [], []
+        # np.savetxt(beam_decode_log_file, np.array(
+        #     ['epoch,loss,train_cer,train_wer,dev_cer,dev_wer,dev_beam_cer,dev_beam_wer']), fmt="%s", delimiter=",")
 
     for epoch in range(start_epoch, args.epochs):
         model.train()
