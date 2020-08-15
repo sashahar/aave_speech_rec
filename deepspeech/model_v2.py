@@ -130,7 +130,6 @@ class DeepSpeech(nn.Module):
         rnn_input_size = int(math.floor(rnn_input_size + 2 * 10 - 21) / 2 + 1)
         rnn_input_size *= 32
 
-        rnns = []
 
         #self.rnn = nn.LSTM(input_size=rnn_input_size, hidden_size=self.rnn_hidden_size, bidirectional=True, bias=True)
         self.rnn = BatchRNN(input_size=rnn_input_size, hidden_size=rnn_hidden_size, nb_layers=self.nb_layers,
@@ -152,8 +151,7 @@ class DeepSpeech(nn.Module):
         x = x.view(sizes[0], sizes[1] * sizes[2], sizes[3])  # Collapse feature dimension
         x = x.transpose(1, 2).contiguous()  # NxTxH (batch dim first)
 
-        for rnn in self.rnns:
-            x = rnn(x, output_lengths, total_length)
+        x = self.rnn(x, output_lengths, total_length)
         #Output of RNN is bath first #NxTxH2
 
         x = x.transpose(0, 1).contiguous() # TxNxH2, where H2 is self.rnn_hidden_size
