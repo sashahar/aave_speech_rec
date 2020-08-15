@@ -49,7 +49,7 @@ def decode_dataset(lm_alpha, lm_beta, decoder):
 
 if __name__ == '__main__':
 	
-	decoder = BeamCTCDecoder(characters, lm_path=args.lm_path,  blank_index=characters.index('_'), lm_alpha = args.lm_alpha, lm_beta=args.lm_beta)
+	decoder = BeamCTCDecoder(characters, lm_path=args.lm_path,  blank_index=characters.index('_'), alpha = args.lm_alpha, beta=args.lm_beta)
 	results = decode_dataset(args.lm_alpha, args.lm_beta, decoder)
 
 	print(results)
