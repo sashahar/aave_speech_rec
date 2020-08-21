@@ -55,8 +55,6 @@ parser.add_argument('--num-layers', type = int, default = 4,
                     help='Number of RNN layers to use in DeepSpeech architecture.  default value of 4 aligns with experiments so far.')
 parser.add_argument('--log-dir', default='logs',
                     help='Specify absolute path to log directory.  Relative paths will originate in deepspeech dir.')
-parser.add_argument('--no-eval', action='store_true',
-                    help='determines whether to run evaluation on validation set.')
 
 
 MODEL_SAVE_DIR = 'models'
@@ -189,10 +187,7 @@ if __name__ == '__main__':
             ['epoch,iter,loss,example']), fmt="%s", delimiter=",")
         np.savetxt(cer_wer_log_file, np.array(
             ['epoch,loss,train_cer,train_wer, dev_cer,dev_wer']), fmt="%s", delimiter=",")
-        loss_results, wer_dev_results, cer_dev_results = [], [], [] #instantiate these variables if they weren't loaded from a saved model
-
-        # np.savetxt(beam_decode_log_file, np.array(
-        #     ['epoch,loss,train_cer,train_wer,dev_cer,dev_wer,dev_beam_cer,dev_beam_wer']), fmt="%s", delimiter=",")
+        loss_results, wer_dev_results, cer_dev_results = [], [], []
 
     for epoch in range(start_epoch, args.epochs):
         model.train()
@@ -263,7 +258,7 @@ if __name__ == '__main__':
                                         wer_results=wer_dev_results, cer_results=cer_dev_results, avg_loss=avg_loss),
                                         save_model_params_file_latest)
 
-        if (epoch % 5 == 0) and (not args.no_eval):
+        if (epoch % 5 == 0):
             with torch.no_grad():
                 train_wer, train_cer, out_train_data, out_train_text = evaluate(test_loader=train_eval_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
                 wer, cer, output_data, output_text = evaluate(
