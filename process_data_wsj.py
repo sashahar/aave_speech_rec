@@ -2,10 +2,11 @@
 import pandas as pd
 import numpy as np
 import os
+import re
 
-OUTPUT_DIR = 'wsj_txt/si_tr_s'
-INPUT_MANIFEST_PATH = 'manifests_wsj/train_manifest_wsj_wav_only.csv'
-OUTPUT_MANIFEST_PATH = 'wsj/manifests_wsj/train_manifest.csv'
+OUTPUT_DIR = 'wsj/val/txt'
+INPUT_MANIFEST_PATH = 'manifests_wsj/wav_only/val_manifest_wsj.csv'
+OUTPUT_MANIFEST_PATH = 'manifests_wsj/val_manifest_wsj.csv'
 
 TRANSCRIPTION_DIR = 'wsj/13-34.1/wsj1/trans/wsj1/si_tr_s'
 EXCLUDE_LIST = ['48wc0304']
@@ -30,7 +31,7 @@ def read_lsn_file(filepath, dir_id, id_set):
     create_output_dir(dir_id)
     for line in file.readlines():
         transcript, id = get_transcript_components(line)
-        if id in EXCLUDE_LIST or id not in id_set: continue
+        if id in EXCLUDE_LIST: continue #or id not in id_set:
         destination_path = OUTPUT_DIR + "/" + dir_id + "/" + id + ".txt"
         with open(destination_path, "w") as txt_file:
             txt_file.write(transcript)
@@ -54,14 +55,14 @@ def get_all_wav_files_in_train(index_path):
 
 def process_transcript_directory(id_set):
     #iterate through all directories in transcript directory
-    all_files_dict = {'txt_file': [], 'id': [], 'transcription': []}
+    all_files_dict = {'txt_file': [], 'id': [], 'transcript': []}
     for dir_entry in os.listdir(TRANSCRIPTION_DIR):
         for file in os.listdir(TRANSCRIPTION_DIR + "/" + dir_entry):
             if file.split(".")[-1] == 'lsn':
                 output_dict = read_lsn_file(TRANSCRIPTION_DIR + "/" + dir_entry + "/" + file, dir_entry, id_set)
                 all_files_dict['txt_file'].extend(output_dict['txt_file'])
                 all_files_dict['id'].extend(output_dict['id'])
-                all_files_dict['transcription'].extend(output_dict['transcription'])
+                all_files_dict['transcript'].extend(output_dict['transcript'])
     return pd.DataFrame(all_files_dict)
 
 if __name__ == '__main__':
@@ -72,9 +73,11 @@ if __name__ == '__main__':
     wav_df = pd.read_csv(INPUT_MANIFEST_PATH)#get_all_wav_files_in_train(INDEX_PATH)
     id_set = set(wav_df.id)
     txt_df = process_transcript_directory(id_set)
+    txt_df.to_csv("txt_df.csv", index = False)
     txt_df.set_index('id', inplace = True)
     final_manifest = wav_df.join(txt_df, on = 'id', how = 'inner')
-    cols_new_order = ['wav_file', 'txt_file', 'groundtruth_text', 'id']
+    print(len(final_manifest))
+    cols_new_order = ['wav_file', 'txt_file', 'transcript', 'id']
     final_manifest = final_manifest[cols_new_order]
     print(len(final_manifest))
     print(final_manifest.head())
