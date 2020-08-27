@@ -29,11 +29,11 @@ def read_dot_file(filepath, dir_id, id_set):
     #read individual lines of transcription file
     output_dict = {'txt_file': [], 'id': [], 'transcript': []}
     file = open(filepath, 'r')
-    create_output_dir(dir_id)
     for line in file.readlines():
         transcript, id = get_transcript_components(line)
         if id in EXCLUDE_LIST or id not in id_set: continue #or id not in id_set:
         destination_path = OUTPUT_DIR + "/" + dir_id + "/" + id + ".txt"
+        create_output_dir(dir_id)
         with open(destination_path, "w") as txt_file:
             txt_file.write(transcript)
         output_dict['txt_file'].append(destination_path)
