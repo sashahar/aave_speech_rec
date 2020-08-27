@@ -181,8 +181,9 @@ if __name__ == '__main__':
     losses = AverageMeter()
     ctc_loss = nn.CTCLoss()
 
-    if not os.path.exists(args.log_dir):
-        os.mkdir(args.log_dir)
+    if not os.path.exists(save_model_params_file_latest):
+        if not os.path.exists(args.log_dir):
+            os.mkdir(args.log_dir)
         np.savetxt(loss_log_file, np.array(
             ['epoch,loss']), fmt="%s", delimiter=",")
         np.savetxt(temp_high_loss_file, np.array(
