@@ -134,7 +134,6 @@ if __name__ == '__main__':
         print("previous avg loss is : ", avg_loss)
     else:
         model = DeepSpeech(args.hidden_dim, use_mfcc_features = args.use_mfcc_features, nb_layers= args.num_layers)
-        loss_results, cer_dev_results, wer_dev_results = [],[],[]
     print("Hidden Size: {}, Number of params: {}".format(args.hidden_dim, DeepSpeech.get_param_size(model)))
     model = model.to(device)
 
