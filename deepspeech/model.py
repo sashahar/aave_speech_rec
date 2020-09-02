@@ -61,7 +61,7 @@ class MaskConv(nn.Module):
 
 class DeepBatchRNN(nn.Module):
     def __init__(self, input_size, hidden_size, nb_layers=NB_LAYERS, rnn_type=nn.LSTM, bidirectional=False):
-        super(BatchRNN, self).__init__()
+        super(DeepBatchRNN, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.bidirectional = bidirectional
@@ -78,9 +78,10 @@ class DeepBatchRNN(nn.Module):
         self.rnn.flatten_parameters()
         x, h = self.rnn(x)
         x, _ = nn.utils.rnn.pad_packed_sequence(x, batch_first=True, total_length = total_length)
-        # if self.bidirectional:
-        #     # (TxNxH*2) -> (TxNxH) by sum
-        #     x = x.view(x.size(0), x.size(1), 2, -1).sum(2).view(x.size(0), x.size(1), -1)  # (TxNxH*2) -> (TxNxH) by sum
+        # 
+        if self.bidirectional:
+             # (TxNxH*2) -> (TxNxH) by sum
+             x = x.view(x.size(0), x.size(1), 2, -1).sum(2).view(x.size(0), x.size(1), -1)  # (TxNxH*2) -> (TxNxH) by sum
         return x
 
 class BatchRNN(nn.Module):
