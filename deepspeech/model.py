@@ -113,22 +113,23 @@ class DeepSpeech(nn.Module):
         self.use_mfcc_features = use_mfcc_features
         self.nb_layers = nb_layers
 
-        self.conv = MaskConv(nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=(41, 11), stride=(2, 2), padding=(20, 5)),
-            nn.BatchNorm2d(32),
-            nn.Hardtanh(0, 20, inplace=True),
-            nn.Conv2d(32, 32, kernel_size=(21, 11), stride=(2, 1), padding=(10, 5)),
-            nn.BatchNorm2d(32),
-        ))
+        #REMOVED CONVOLUTIONAL LAYERS
+        # self.conv = MaskConv(nn.Sequential(
+        #     nn.Conv2d(1, 32, kernel_size=(41, 11), stride=(2, 2), padding=(20, 5)),
+        #     nn.BatchNorm2d(32),
+        #     nn.Hardtanh(0, 20, inplace=True),
+        #     nn.Conv2d(32, 32, kernel_size=(21, 11), stride=(2, 1), padding=(10, 5)),
+        #     nn.BatchNorm2d(32),
+        # ))
 
         if self.use_mfcc_features:
             rnn_input_size = 40
         else:
             rnn_input_size = int(math.floor((audio_conf['n_fft']) / 2) + 1)
         #Calculate output size of convolutional layers
-        rnn_input_size = int(math.floor(rnn_input_size + 2 * 20 - 41) / 2 + 1)
-        rnn_input_size = int(math.floor(rnn_input_size + 2 * 10 - 21) / 2 + 1)
-        rnn_input_size *= 32
+        # rnn_input_size = int(math.floor(rnn_input_size + 2 * 20 - 41) / 2 + 1)
+        # rnn_input_size = int(math.floor(rnn_input_size + 2 * 10 - 21) / 2 + 1)
+        # rnn_input_size *= 32
 
         rnns = []
 
@@ -151,7 +152,7 @@ class DeepSpeech(nn.Module):
     def forward(self, x, lengths, total_length):
         #X has shape: batch x 1 (num_channels) x n_fft (constant over all batches) x padded_seq_len
         output_lengths = self.get_seq_lens(lengths)
-        x, _ = self.conv(x, output_lengths) #X has shape: batch x 32 (num_channels) x rnn_input_size//32 x f(padded_seq_len)
+        #x, _ = self.conv(x, output_lengths) #X has shape: batch x 32 (num_channels) x rnn_input_size//32 x f(padded_seq_len)
 
         sizes = x.size()
 

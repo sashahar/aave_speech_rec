@@ -11,8 +11,8 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
-SAMPLE_RATE = 44100
-N_FFT = 1024
+SAMPLE_RATE = 16000
+N_FFT = 254
 
 audio_conf = {
     'sample_rate': SAMPLE_RATE,  # The sample rate for the data/model features
