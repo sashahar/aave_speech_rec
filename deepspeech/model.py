@@ -266,11 +266,16 @@ class DeepSpeech(nn.Module):
     def load_model_package(cls, package):
         mfcc = package.get('use_mfcc_features', False)
         nb_layers = package.get('nb_layers', 4)
+        sample_rate = package.get('sample_rate', 16000)
+        window_size = package.get('window_size', 254)
+        audio_conf = {
+            'sample_rate': package.get('sample_rate', 16000), 
+            'n_fft': package.get('window_size', 254)
+        }
         model = cls(rnn_hidden_size=package['hidden_size'],
                     use_mfcc_features = mfcc,
                     nb_layers = nb_layers,
-                    sample_rate= package['sample_rate'],
-                    window_size=package['window_size'])
+                    audio_conf = audio_conf)
         model.load_state_dict(package['state_dict'])
         return model
 
