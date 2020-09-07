@@ -143,7 +143,7 @@ if __name__ == '__main__':
         wer_dev_results = package.get("wer_results", [])
         print("previous avg loss is : ", avg_loss)
     else:
-        model = DeepSpeech(args.hidden_dim, use_mfcc_features = args.use_mfcc_features, nb_layers= args.num_layers)
+        model = DeepSpeech(args.hidden_dim, audio_conf, use_mfcc_features = args.use_mfcc_features, nb_layers= args.num_layers)
     print("Hidden Size: {}, Number of params: {}".format(args.hidden_dim, DeepSpeech.get_param_size(model)))
     model = model.to(device)
 
