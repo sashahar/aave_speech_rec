@@ -44,7 +44,7 @@ def _collate_fn(batch):
     return inputs, targets, input_lengths, target_lengths, files
 
 class AudioDataset(Dataset):
-    def __init__(self, manifest_filepath, char_vocab_path, use_mfcc_features = False, audio_conf = audio_conf):
+    def __init__(self, manifest_filepath, char_vocab_path, audio_conf, use_mfcc_features = False):
         super().__init__()
 
         with open(manifest_filepath) as f:
