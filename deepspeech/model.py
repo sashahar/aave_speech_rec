@@ -133,7 +133,7 @@ class DeepSpeech(nn.Module):
 
         self.sample_rate = audio_conf['sample_rate']
         self.rnn_hidden_size = rnn_hidden_size
-        self.window_size = audio_conf['n_fft']
+        self.n_fft = audio_conf['n_fft']
         self.use_mfcc_features = use_mfcc_features
         self.nb_layers = nb_layers
 
@@ -226,7 +226,7 @@ class DeepSpeech(nn.Module):
         package = {
             'hidden_size': model.rnn_hidden_size,
             'sample_rate': model.sample_rate,
-            'window_size': model.window_size,
+            'n_fft': model.n_fft,
             'use_mfcc_features': model.use_mfcc_features,
             'nb_layers': model.nb_layers,
             'state_dict': model.state_dict(),
@@ -267,10 +267,10 @@ class DeepSpeech(nn.Module):
         mfcc = package.get('use_mfcc_features', False)
         nb_layers = package.get('nb_layers', 4)
         sample_rate = package.get('sample_rate', 16000)
-        window_size = package.get('window_size', 254)
+        n_fft = package.get('n_fft', 254)
         audio_conf = {
             'sample_rate': package.get('sample_rate', 16000), 
-            'n_fft': package.get('window_size', 254)
+            'n_fft': package.get('n_fft', 254)
         }
         model = cls(rnn_hidden_size=package['hidden_size'],
                     use_mfcc_features = mfcc,
