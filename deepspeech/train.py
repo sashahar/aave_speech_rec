@@ -5,6 +5,7 @@ import torch.nn as nn
 import json
 import os
 import numpy as np
+import scipy
 
 from model import DeepSpeech, CustomDataParallel
 from dataloader import AudioDataLoader, AudioDataset, BucketingSampler

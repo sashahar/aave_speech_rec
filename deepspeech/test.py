@@ -5,6 +5,7 @@ import torch
 from tqdm import tqdm
 import json
 import os
+import scipy
 
 from dataloader import AudioDataLoader, AudioDataset, BucketingSampler
 from decoder import GreedyDecoder, BeamCTCDecoder
