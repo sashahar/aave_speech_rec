@@ -30,6 +30,9 @@ parser.add_argument('--adversarial', action='store_true',
 parser.add_argument('--log-dir', default='logs',
                     help='Specify absolute path to log directory.  Relative paths will originate in deepspeech dir.')
 parser.add_argument('--mfcc', action="store_true", help='Use cuda')
+parser.add_argument('--n-fft', type = int, default = 254, help='n fft')
+parser.add_argument('--hop-length', type = int, default = 127, help='window stride')
+parser.add_argument('--sample-rate', type = int, default = 16000, help='n fft')
 
 SAVE_TXT_FILE = 'word_preds'
 SAVE_SUMMARY_FILE = 'summary_stats'
@@ -200,6 +203,13 @@ if __name__ == '__main__':
     model, optim_state, start_epoch, _, avg_loss = load_saved_model(args)
     model = model.to(device)
 
+    audio_conf = {
+        'sample_rate': args.sample_rate,  # The sample rate for the data/model features
+        'hop_length': args.hop_length,  # Window stride for spectrogram generation (seconds)
+        'n_fft': args.n_fft, #sample_rate*window_size rounded to nearest power of 2, for efficiency
+        'window':scipy.signal.hamming
+    }
+
     with open(args.char_vocab_path) as label_file:
         characters = str(''.join(json.load(label_file)))
 
@@ -210,7 +220,7 @@ if __name__ == '__main__':
 
     target_decoder = GreedyDecoder(characters)
 
-    test_dataset = AudioDataset(manifest_filepath=args.test_manifest, char_vocab_path=args.char_vocab_path)
+    test_dataset = AudioDataset(manifest_filepath=args.test_manifest, char_vocab_path=args.char_vocab_path, audio_conf=audio_conf)
     test_sampler = BucketingSampler(test_dataset, batch_size=args.batch_size)
     test_loader = AudioDataLoader(test_dataset, batch_sampler=test_sampler)
 

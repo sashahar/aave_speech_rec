@@ -11,17 +11,6 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
-SAMPLE_RATE = 16000
-N_FFT = 254
-
-audio_conf = {
-    'sample_rate': SAMPLE_RATE,  # The sample rate for the data/model features
-    'window_size': 0.02,  # Window size for spectrogram generation (seconds)
-    'window_stride': 0.01,  # Window stride for spectrogram generation (seconds)
-    'n_fft': N_FFT, #sample_rate*window_size rounded to nearest power of 2, for efficiency
-    'window':scipy.signal.hamming
-}
-
 class AudioDataLoader(DataLoader):
     def __init__(self, *args, **kwargs):
         """
@@ -89,7 +78,7 @@ class AudioDataset(Dataset):
     def get_mel_filterbank(self, sound):
         n_fft = self.audio_conf['n_fft']
         win_length = n_fft
-        hop_length = int(self.audio_conf['sample_rate'] * self.audio_conf['window_stride'])
+        hop_length = self.audio_conf['hop_length']
         #Return complex values spectrogram (D) - Short Time Fourier Transform
         D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
                                  win_length=win_length, window=self.audio_conf['window'])
@@ -106,8 +95,8 @@ class AudioDataset(Dataset):
     #Takes in a sound array and returns a spectrogram
     def get_spectrogram(self, sound):
         n_fft = self.audio_conf['n_fft']
-        win_length = n_fft
-        hop_length = int(self.audio_conf['sample_rate'] * self.audio_conf['window_stride'])
+        win_length = n_fft #254
+        hop_length = self.audio_conf['hop_length']         
         #Return complex values spectrogram (D) - Short Time Fourier Transform
         D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
                                  win_length=win_length, window=self.audio_conf['window'])

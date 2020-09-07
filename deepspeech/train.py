@@ -57,6 +57,9 @@ parser.add_argument('--log-dir', default='logs',
                     help='Specify absolute path to log directory.  Relative paths will originate in deepspeech dir.')
 parser.add_argument('--no-eval', action='store_true',
                     help='determines whether to run evaluation on validation set.')
+parser.add_argument('--n-fft', type = int, default = 254, help='n fft')
+parser.add_argument('--hop-length', type = int, default = 127, help='window stride')
+parser.add_argument('--sample-rate', type = int, default = 16000, help='n fft')
 
 
 MODEL_SAVE_DIR = 'models'
@@ -123,6 +126,13 @@ if __name__ == '__main__':
     device = torch.device("cuda" if args.cuda else "cpu")
     print('using device: {}'.format(device))
 
+    audio_conf = {
+        'sample_rate': args.sample_rate,  # The sample rate for the data/model features
+        'hop_length': args.hop_length,  # Window stride for spectrogram generation (seconds)
+        'n_fft': args.n_fft, #sample_rate*window_size rounded to nearest power of 2, for efficiency
+        'window':scipy.signal.hamming
+    }
+
     start_epoch, start_iter, optim_state = 0, 0, None
     if os.path.exists(save_model_params_file_latest):
         print("Loading checkpoint from: {}".format(save_model_params_file_latest))
@@ -154,11 +164,11 @@ if __name__ == '__main__':
     beam_decoder = BeamCTCDecoder(characters)
 
     train_dataset = AudioDataset(
-        manifest_filepath=args.train_manifest, char_vocab_path=args.char_vocab_path, use_mfcc_features= args.use_mfcc_features)
+        manifest_filepath=args.train_manifest, char_vocab_path=args.char_vocab_path, audio_conf=audio_conf, use_mfcc_features= args.use_mfcc_features)
     train_eval_dataset = AudioDataset(
-        manifest_filepath=args.train_manifest, char_vocab_path=args.char_vocab_path, use_mfcc_features= args.use_mfcc_features)
+        manifest_filepath=args.train_manifest, char_vocab_path=args.char_vocab_path, audio_conf=audio_conf, use_mfcc_features= args.use_mfcc_features)
     val_dataset = AudioDataset(
-        manifest_filepath=args.val_manifest, char_vocab_path=args.char_vocab_path, use_mfcc_features= args.use_mfcc_features)
+        manifest_filepath=args.val_manifest, char_vocab_path=args.char_vocab_path, audio_conf=audio_conf, use_mfcc_features= args.use_mfcc_features)
 
     train_sampler = BucketingSampler(train_dataset, batch_size=args.batch_size)
 
