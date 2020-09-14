@@ -96,15 +96,18 @@ class AudioDataset(Dataset):
     def get_spectrogram(self, sound):
         n_fft = self.audio_conf['n_fft']
         win_length = n_fft #254
-        hop_length = self.audio_conf['hop_length']         
+        hop_length = self.audio_conf['hop_length']
         #Return complex values spectrogram (D) - Short Time Fourier Transform
-        D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
-                                 win_length=win_length, window=self.audio_conf['window'])
-        #Transofrms D into its magnitude and phase components
-        spect, phase = librosa.magphase(D)
-        # S = log(S + 1)
-        spect = np.log1p(spect)
-        spect = torch.FloatTensor(spect)
+        #OLD CODE: STFT TRANSFORM WITH LIBROSA
+        # D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
+        #                          win_length=win_length, window=self.audio_conf['window'])
+        # #Transofrms D into its magnitude and phase components
+        # spect, phase = librosa.magphase(D)
+        # # S = log(S + 1)
+        # spect = np.log1p(spect)
+        #NEW CODE:
+        plt_spect, _, _, _ = plt.specgram(sound, NFFT =n_fft, Fs=self.audio_conf['sample_rate'], noverlap = hop_length, scale_by_freq = False, mode = 'magnitude')
+        spect = torch.FloatTensor(plt_spect)
         #Normalize spectrogram
         mean = spect.mean()
         std = spect.std()
