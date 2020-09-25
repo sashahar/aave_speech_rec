@@ -107,7 +107,7 @@ class AudioDataset(Dataset):
         spect = np.log1p(spect)
         #NEW CODE:
         #plt_spect, _, _, _ = plt.specgram(sound, NFFT =n_fft, Fs=self.audio_conf['sample_rate'], noverlap = hop_length, scale_by_freq = False, mode = 'magnitude')
-        spect = torch.FloatTensor(plt_spect)
+        spect = torch.FloatTensor(spect)
         #Normalize spectrogram
         mean = spect.mean()
         std = spect.std()
