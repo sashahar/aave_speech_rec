@@ -169,13 +169,11 @@ if __name__ == '__main__':
 
     lr = args.lr
     print("using learning rate: ", lr)
-    # nesterov=True, weight_decay=1e-5)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     # load previous optimizer state if using a pretrained model
     if optim_state is not None:
         optimizer.load_state_dict(optim_state)
 
-    #loss_results, wer_results = torch.Tensor(args.epochs), torch.Tensor(args.epochs)
     wer_train_results, cer_train_results = [], []
     batch_time = AverageMeter()
     losses = AverageMeter()

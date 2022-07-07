@@ -68,13 +68,12 @@ class BatchRNN(nn.Module):
         self.batch_norm = SequenceWise(nn.BatchNorm1d(input_size)) if batch_norm else None
         self.rnn = rnn_type(input_size=input_size, hidden_size=hidden_size,
                             bidirectional=bidirectional, bias=True)
-        # self.num_directions = 2 if bidirectional else 1
 
     def flatten_parameters(self):
         self.rnn.flatten_parameters()
 
     def forward(self, x, output_lengths, total_length):
-        #TxNxH (seq_len, batch, feature_dim)
+        # TxNxH (seq_len, batch, feature_dim)
         if self.batch_norm is not None:
             x = self.batch_norm(x)
         x = nn.utils.rnn.pack_padded_sequence(x, output_lengths, batch_first=True)
@@ -131,8 +130,6 @@ class DeepSpeech(nn.Module):
         rnn_input_size *= 32
 
         rnns = []
-
-        #self.rnn = nn.LSTM(input_size=rnn_input_size, hidden_size=self.rnn_hidden_size, bidirectional=True, bias=True)
         rnn = BatchRNN(input_size=rnn_input_size, hidden_size=rnn_hidden_size, rnn_type=RNN_TYPE,
                        bidirectional=True, batch_norm=False)
         rnns.append(('0', rnn))
@@ -149,7 +146,7 @@ class DeepSpeech(nn.Module):
         self.inference_softmax = InferenceBatchSoftmax()
 
     def forward(self, x, lengths, total_length):
-        #X has shape: batch x 1 (num_channels) x n_fft (constant over all batches) x padded_seq_len
+        # X has shape: batch x 1 (num_channels) x n_fft (constant over all batches) x padded_seq_len
         output_lengths = self.get_seq_lens(lengths)
         x, _ = self.conv(x, output_lengths) #X has shape: batch x 32 (num_channels) x rnn_input_size//32 x f(padded_seq_len)
 
@@ -160,7 +157,7 @@ class DeepSpeech(nn.Module):
 
         for rnn in self.rnns:
             x = rnn(x, output_lengths, total_length)
-        #Output of RNN is bath first #NxTxH2
+        # Output of RNN is bath first #NxTxH2
 
         x = x.transpose(0, 1).contiguous() # TxNxH2, where H2 is self.rnn_hidden_size
         # T*N*H -> (T*N)*H
@@ -248,7 +245,7 @@ class SimpleNN(nn.Module):
     def __init__(self, input_sz, hidden_size = 256):
         super(SimpleNN,self).__init__()
         self.fc1 = nn.Linear(input_sz, hidden_size)
-        #features Needs to be 1000 for resnet #Needs to be 4096 for vgg #Needs to be 512 when doing CNN
+        # features Needs to be 1000 for resnet #Needs to be 4096 for vgg #Needs to be 512 when doing CNN
         self.fc2 = nn.Linear(hidden_size, 2)
 
     def forward(self, x):
@@ -292,11 +289,9 @@ class SimpleLSTMClassifier(nn.Module):
 		# ht = (1 x batch_size x hidden_dim)
 		# ht[-1] = (batch_size x hidden_dim)
 
-        #ignore dropout for now
-        # output = self.dropout_layer(ht[-1])
-        out = self.hidden2out(ht) #packed_out.data)
-        out = out.view(N, -1) #reshape such that shape[0] = batch size
-        #no softmax do to specifications of CrossEntropyLoss
+        out = self.hidden2out(ht) # packed_out.data)
+        out = out.view(N, -1) # reshape such that shape[0] = batch size
+        # no softmax due to specifications of CrossEntropyLoss
         return out
 
     def serialize(model, optimizer=None, epoch=None, iteration=None, loss_results=None,

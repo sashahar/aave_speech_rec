@@ -43,8 +43,6 @@ def evaluate(test_loader, device, model, decoder, target_decoder, save_output=Fa
     output_text = ['filepath,prediction,target'] #adds header
     for i, (data) in tqdm(enumerate(test_loader), total=len(test_loader)):
 
-        #wrap in try/catch statement
-        #try:
         inputs, targets, input_sizes, target_sizes, filenames = data
 
         total_length = max(input_sizes).item()
@@ -62,14 +60,12 @@ def evaluate(test_loader, device, model, decoder, target_decoder, save_output=Fa
         out, output_sizes = model(inputs, input_sizes, total_length)
 
         decoded_output, _ = decoder.decode(out, output_sizes)
-        #print(decoded_output)
         target_strings = target_decoder.convert_to_strings(split_targets)
-        #print(target_strings)
 
         if save_output is not None:
             # add output to data array, and continue
             output_data.append((out.detach().cpu().numpy(), output_sizes.detach().cpu().numpy(), target_strings))
-            #adjustment: add decoded output to list in format ("model output", "target output")
+            # adjustment: add decoded output to list in format ("model output", "target output")
             for j in range(len(target_strings)):
                 curr_file = filenames[j].split("/")[-1]
                 output_text.append("{},{},{}".format(curr_file, decoded_output[j][0], target_strings[j][0]))
@@ -82,13 +78,10 @@ def evaluate(test_loader, device, model, decoder, target_decoder, save_output=Fa
             total_cer += cer_inst
             num_tokens += len(reference.split())
             num_chars += len(reference.replace(' ', ''))
-        # except:
-        #     print("Encountered CUDA memory error")
-        #     print(torch.cuda.memory_summary())
 
     wer = float(total_wer) / num_tokens
     cer = float(total_cer) / num_chars
-    #adjustment: added output_text as an additional return value
+    # adjustment: added output_text as an additional return value
     return wer * 100, cer * 100, output_data, output_text
 
 def evaluate_adversarial(test_loader, device, model, decoder, target_decoder):
@@ -116,9 +109,7 @@ def evaluate_adversarial(test_loader, device, model, decoder, target_decoder):
             out, output_sizes = model(inputs, input_sizes)
 
             decoded_output, _ = decoder.decode(out, output_sizes)
-            #print(decoded_output)
             target_strings = target_decoder.convert_to_strings(split_targets)
-            #print(target_strings)
 
             # add output to data array, and continue
             output_data.append((out.cpu().numpy(), output_sizes.numpy(), target_strings))
