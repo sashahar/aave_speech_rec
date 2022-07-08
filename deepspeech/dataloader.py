@@ -1,26 +1,27 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import librosa
-import scipy
 import json
 import re
+
+import librosa
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scipy
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.sampler import Sampler
 
 SAMPLE_RATE = 44100
 N_FFT = 1024
 
 audio_conf = {
-    'sample_rate': SAMPLE_RATE,  # The sample rate for the data/model features
-    'window_size': 0.02,  # Window size for spectrogram generation (seconds)
-    'window_stride': 0.01,  # Window stride for spectrogram generation (seconds)
-    'n_fft': N_FFT, #sample_rate*window_size rounded to nearest power of 2, for efficiency
-    'window':scipy.signal.hamming
+    "sample_rate": SAMPLE_RATE,  # The sample rate for the data/model features
+    "window_size": 0.02,  # Window size for spectrogram generation (seconds)
+    "window_stride": 0.01,  # Window stride for spectrogram generation (seconds)
+    "n_fft": N_FFT,  # sample_rate*window_size rounded to nearest power of 2, for efficiency
+    "window": scipy.signal.hamming,
 }
+
 
 class AudioDataLoader(DataLoader):
     def __init__(self, *args, **kwargs):
@@ -29,6 +30,7 @@ class AudioDataLoader(DataLoader):
         """
         super().__init__(*args, **kwargs)
         self.collate_fn = _collate_fn
+
 
 def _collate_fn(batch):
     batch = sorted(batch, key=lambda sample: sample[0].size(1), reverse=True)
@@ -54,77 +56,106 @@ def _collate_fn(batch):
     targets = torch.IntTensor(targets)
     return inputs, targets, input_lengths, target_lengths, files
 
+
 class AudioDataset(Dataset):
-    def __init__(self, manifest_filepath, char_vocab_path, use_mfcc_features = False, audio_conf = audio_conf):
+    def __init__(
+        self,
+        manifest_filepath,
+        char_vocab_path,
+        use_mfcc_features=False,
+        audio_conf=audio_conf,
+    ):
         super().__init__()
 
         with open(manifest_filepath) as f:
             data_filepaths = f.readlines()
-        data_filepaths = [x.strip().split(',') for x in data_filepaths]
+        data_filepaths = [x.strip().split(",") for x in data_filepaths]
         self.data_filepaths = data_filepaths
         self.size = len(data_filepaths)
         self.char2ind = self.create_char2ind_map(char_vocab_path)
         self.audio_conf = audio_conf
         self.use_mfcc_features = use_mfcc_features
 
-    '''Takes in a file path to the character vocab and returns a dictionary
-    mapping characters to indices'''
+    """Takes in a file path to the character vocab and returns a dictionary
+    mapping characters to indices"""
+
     def create_char2ind_map(self, char_vocab_path):
         with open(char_vocab_path) as char_vocab_file:
-            characters = str(''.join(json.load(char_vocab_file)))
+            characters = str("".join(json.load(char_vocab_file)))
         char2ind = dict([(characters[i], i) for i in range(len(characters))])
         return char2ind
 
-    #Takes in an audio path and returns a normalized array representing the audio
+    # Takes in an audio path and returns a normalized array representing the audio
     def load_audio(self, audio_path):
-        #returns audio time series with length duration*sample_rate
-        sound, sample_rate = librosa.load(audio_path, sr = self.audio_conf['sample_rate'])
+        # returns audio time series with length duration*sample_rate
+        sound, sample_rate = librosa.load(audio_path, sr=self.audio_conf["sample_rate"])
         return sound
 
     def get_mfcc_features(self, sound):
-        mfcc = librosa.feature.mfcc(sound, sr = self.audio_conf['sample_rate'], \
-            n_mfcc = 40, n_fft = self.audio_conf['n_fft'], window = self.audio_conf['window'])
+        mfcc = librosa.feature.mfcc(
+            sound,
+            sr=self.audio_conf["sample_rate"],
+            n_mfcc=40,
+            n_fft=self.audio_conf["n_fft"],
+            window=self.audio_conf["window"],
+        )
         return torch.FloatTensor(mfcc)
 
     def get_mel_filterbank(self, sound):
-        n_fft = self.audio_conf['n_fft']
+        n_fft = self.audio_conf["n_fft"]
         win_length = n_fft
-        hop_length = int(self.audio_conf['sample_rate'] * self.audio_conf['window_stride'])
-        #Return complex values spectrogram (D) - Short Time Fourier Transform
-        D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
-                                 win_length=win_length, window=self.audio_conf['window'])
-        magnitude = np.abs(D)**2
-        mel = librosa.filters.mel(sr=self.audio_conf['sample_rate'], n_fft=n_fft, n_mels=164)
+        hop_length = int(
+            self.audio_conf["sample_rate"] * self.audio_conf["window_stride"]
+        )
+        # Return complex values spectrogram (D) - Short Time Fourier Transform
+        D = librosa.stft(
+            sound,
+            n_fft=n_fft,
+            hop_length=hop_length,
+            win_length=win_length,
+            window=self.audio_conf["window"],
+        )
+        magnitude = np.abs(D) ** 2
+        mel = librosa.filters.mel(
+            sr=self.audio_conf["sample_rate"], n_fft=n_fft, n_mels=164
+        )
         mel_spect = mel.dot(magnitude)
-        #Normalize spectrogram
+        # Normalize spectrogram
         mean = mel_spect.mean()
         std = mel_spect.std()
         mel_spect.add_(-mean)
         mel_spect.div_(std)
         return mel_spect
 
-    #Takes in a sound array and returns a spectrogram
+    # Takes in a sound array and returns a spectrogram
     def get_spectrogram(self, sound):
-        n_fft = self.audio_conf['n_fft']
+        n_fft = self.audio_conf["n_fft"]
         win_length = n_fft
-        hop_length = int(self.audio_conf['sample_rate'] * self.audio_conf['window_stride'])
-        #Return complex values spectrogram (D) - Short Time Fourier Transform
-        D = librosa.stft(sound, n_fft=n_fft, hop_length=hop_length,
-                                 win_length=win_length, window=self.audio_conf['window'])
-        #Transofrms D into its magnitude and phase components
+        hop_length = int(
+            self.audio_conf["sample_rate"] * self.audio_conf["window_stride"]
+        )
+        # Return complex values spectrogram (D) - Short Time Fourier Transform
+        D = librosa.stft(
+            sound,
+            n_fft=n_fft,
+            hop_length=hop_length,
+            win_length=win_length,
+            window=self.audio_conf["window"],
+        )
+        # Transofrms D into its magnitude and phase components
         spect, phase = librosa.magphase(D)
         # S = log(S + 1)
         spect = np.log1p(spect)
         spect = torch.FloatTensor(spect)
-        #Normalize spectrogram
+        # Normalize spectrogram
         mean = spect.mean()
         std = spect.std()
         spect.add_(-mean)
         spect.div_(std)
         return spect
 
-    #Takes in an audio path and returns a spectrogram
-    #Spectrogram is a num_seconds * max_frequency list of lists
+    # Takes in an audio path and returns a spectrogram
+    # Spectrogram is a num_seconds * max_frequency list of lists
     def parse_audio(self, audio_path):
         sound = self.load_audio(audio_path)
         if self.use_mfcc_features:
@@ -133,11 +164,12 @@ class AudioDataset(Dataset):
             features = self.get_spectrogram(sound)
         return features
 
-    '''Takes in a transcript path and the char2ind map and returns an array of
-    character indices representing the transcript'''
+    """Takes in a transcript path and the char2ind map and returns an array of
+    character indices representing the transcript"""
+
     def parse_transcript(self, transcript_path, char2ind):
-        with open(transcript_path, 'r', encoding='utf8') as transcript_file:
-            transcript = transcript_file.read().replace('\n', '')
+        with open(transcript_path, "r", encoding="utf8") as transcript_file:
+            transcript = transcript_file.read().replace("\n", "")
         transcript = list(filter(None, [char2ind.get(x) for x in list(transcript)]))
         return transcript
 
@@ -151,6 +183,7 @@ class AudioDataset(Dataset):
     def __len__(self):
         return self.size
 
+
 class BucketingSampler(Sampler):
     def __init__(self, data_source, batch_size=1):
         """
@@ -159,7 +192,7 @@ class BucketingSampler(Sampler):
         super(BucketingSampler, self).__init__(data_source)
         self.data_source = data_source
         ids = list(range(0, len(data_source)))
-        self.bins = [ids[i:i + batch_size] for i in range(0, len(ids), batch_size)]
+        self.bins = [ids[i : i + batch_size] for i in range(0, len(ids), batch_size)]
 
     def __iter__(self):
         for ids in self.bins:

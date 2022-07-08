@@ -1,15 +1,15 @@
-import pydub
-from pydub import AudioSegment
-import pandas as pd
-import numpy as np
-import os
-from os import path
-import threading
-import re
 import csv
-import xml.etree.ElementTree as ET
+import os
 import re
+import threading
+import xml.etree.ElementTree as ET
+from os import path
+
+import numpy as np
+import pandas as pd
+import pydub
 from process_transcriptions import *
+from pydub import AudioSegment
 
 AUDIO_DIRS = ['data_voc']
 
