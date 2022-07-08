@@ -17,6 +17,7 @@ because phonemes can take up several windows depending on the speaker.
 
 Example command to run the training script:
 ```shell
+python3 train.py --checkpoint --train-manifest ../manifests_slurm/coraal_train_manifest.csv  --val-manifest ../manifests_slurm/coraal_val_manifest.csv --batch-size 10  —hidden—dim 548 epochs 2 --cuda --id coraal_hidden_548_lr1e-3
 ```
 
 # Testing & Inference
