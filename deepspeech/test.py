@@ -167,7 +167,7 @@ def load_saved_model(args):
     package = torch.load(args.model_path, map_location=lambda storage, loc: storage)
     model = DeepSpeech.load_model_package(package)
 
-    #if not args.finetune:  # Don't want to restart training
+    # if not args.finetune:  # Don't want to restart training
     optim_state = package['optim_dict']
     start_epoch = int(package.get('epoch', 1)) - 1  # Index start at 0 for training
     start_iter = package.get('iteration', None)

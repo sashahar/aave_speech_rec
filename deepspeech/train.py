@@ -90,16 +90,14 @@ def load_saved_model(model_path):
                          map_location=lambda storage, loc: storage)
     model = DeepSpeech.load_model_package(package)
 
-    # if not args.finetune:  # Don't want to restart training
     optim_state = package['optim_dict']
-    start_epoch = int(package.get('epoch', 0)) + 1 #Start at following epoch
+    start_epoch = int(package.get('epoch', 0)) + 1 # Start at following epoch
     avg_loss = package.get('avg_loss', 0)
     hidden_dim = package.get('hidden_size', None)
     return model, optim_state, start_epoch, avg_loss, hidden_dim, package
 
 
 if __name__ == '__main__':
-
     args = parser.parse_args()
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -111,7 +109,6 @@ if __name__ == '__main__':
     loss_log_file = args.log_dir + "/" + LOG_FILE + "_loss.csv"
     temp_high_loss_file = args.log_dir + "/" +  "high_loss_examples.csv"
     cer_wer_log_file = args.log_dir + "/" + LOG_FILE + "_er.csv"
-    # beam_decode_log_file = args.log_dir + "/" + LOG_FILE + "_beam_er.csv"
     save_word_preds_file_train = args.log_dir + "/" + SAVE_TXT_FILE + "_train.csv"
     save_word_preds_file_val = args.log_dir + "/" + SAVE_TXT_FILE + "_val.csv"
     save_word_preds_file_train_best = args.log_dir + "/" + SAVE_TXT_FILE + "_train_best.csv"
@@ -188,10 +185,7 @@ if __name__ == '__main__':
             ['epoch,iter,loss,example']), fmt="%s", delimiter=",")
         np.savetxt(cer_wer_log_file, np.array(
             ['epoch,loss,train_cer,train_wer, dev_cer,dev_wer']), fmt="%s", delimiter=",")
-        loss_results, wer_dev_results, cer_dev_results = [], [], [] #instantiate these variables if they weren't loaded from a saved model
-
-        # np.savetxt(beam_decode_log_file, np.array(
-        #     ['epoch,loss,train_cer,train_wer,dev_cer,dev_wer,dev_beam_cer,dev_beam_wer']), fmt="%s", delimiter=",")
+        loss_results, wer_dev_results, cer_dev_results = [], [], [] # instantiate these variables if they weren't loaded from a saved model
 
     for epoch in range(start_epoch, args.epochs):
         model.train()
@@ -205,7 +199,6 @@ if __name__ == '__main__':
 
             #CLEAR CACHE
             torch.cuda.empty_cache()
-            # try:
             inputs, targets, input_sizes, target_sizes, filenames = data
             total_length = max(input_sizes).item()
 
@@ -232,7 +225,7 @@ if __name__ == '__main__':
             batch_time.update(time.time() - end)
             end = time.time()
 
-            #TEMPORARY
+            # Debug examples with extremely high loss
             loss_num = float(loss.cpu().detach())
             if loss_num > 50:
                 with open(temp_high_loss_file, "a") as file:
@@ -255,7 +248,7 @@ if __name__ == '__main__':
         with open(loss_log_file, "a") as file:
             file.write("{},{}\n".format(epoch, avg_loss))
 
-        #Save down latest model every epoch to be resilient to job being killed.
+        # Save down latest model every epoch to be resilient to job being killed.
         print("Saving checkpoint model to %s" % save_model_params_file_latest)
         torch.save(DeepSpeech.serialize(model, optimizer=optimizer, epoch=epoch,
                                         loss_results=loss_results,
@@ -267,13 +260,9 @@ if __name__ == '__main__':
                 train_wer, train_cer, out_train_data, out_train_text = evaluate(test_loader=train_eval_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
                 wer, cer, output_data, output_text = evaluate(
                     test_loader=val_loader, device=device, model=model, decoder=decoder, target_decoder=decoder)
-                # beam_wer, beam_cer, beam_output_data, beam_output_text = evaluate(
-                #     test_loader=val_loader, device=device, model=model, decoder=beam_decoder, target_decoder=decoder)
-                # To evaluate on test set: evaluate(test_loader=train_eval_loader, device=device,model=model,decoder=decoder,target_decoder=decoder) #Edited line to evaluate on train set --> evaluate(test_loader=val_loader, device=device,model=model,decoder=decoder,target_decoder=decoder)
             wer_train_results.append(train_wer)
             cer_train_results.append(train_cer)
             wer_dev_results.append(wer)
-            #cer_results[epoch] = cer
             cer_dev_results.append(cer)
             print('Validation Summary Epoch: [{0}]\t'
                   'Average WER {wer:.3f}\t'
@@ -284,9 +273,6 @@ if __name__ == '__main__':
             with open(cer_wer_log_file, "a") as file:
                 file.write("{},{},{},{},{},{}\n".format(
                     epoch, avg_loss, train_cer, train_wer, cer, wer))
-            # with open(beam_decode_log_file, "a") as file:
-            #     file.write("{},{},{},{},{},{},{},{}\n".format(
-            #         epoch, avg_loss, train_cer, train_wer, cer, wer, beam_cer, beam_wer))
 
             np.savetxt(save_word_preds_file_train, out_train_text, fmt="%s", delimiter=",")
             np.savetxt(save_word_preds_file_val, output_text, fmt="%s", delimiter=",")
@@ -294,7 +280,7 @@ if __name__ == '__main__':
             if cer <= min(cer_dev_results):  # if True:
                 print("New best achieved, writing output to: {}".format(
                     save_word_preds_file_val_best))
-                # np.savetxt(save_word_preds_file_train_best, out_train_text, fmt="%s", delimiter=",")
+                np.savetxt(save_word_preds_file_train_best, out_train_text, fmt="%s", delimiter=",")
                 np.savetxt(save_word_preds_file_val_best, output_text, fmt="%s", delimiter=",")
                 if args.checkpoint:
                     print("Saving checkpoint model to %s" % save_model_params_file_val_best)
