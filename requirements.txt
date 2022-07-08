@@ -1,0 +1,13 @@
+inflect
+jiwer
+Levenshtein
+librosa
+numpy
+matplotlib
+pydub
+pandas
+scipy
+six
+text2digits
+torch==1.11.0
+tqdm

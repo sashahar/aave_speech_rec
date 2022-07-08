@@ -1,8 +1,9 @@
 #Process WSJ text transcriptions to fit our format
-import pandas as pd
-import numpy as np
 import os
 import re
+
+import numpy as np
+import pandas as pd
 
 OUTPUT_DIR = 'wsj/train/txt'
 BASE_PATH_SLURM = '/juice/scr/aharris6/'

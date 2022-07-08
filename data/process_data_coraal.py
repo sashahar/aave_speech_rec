@@ -1,13 +1,14 @@
-import pydub
-from pydub import AudioSegment
-import pandas as pd
-import numpy as np
-import os
-from os import path
-import threading
-import re
 import csv
+import os
+import re
+import threading
+from os import path
+
+import numpy as np
+import pandas as pd
+import pydub
 from process_transcriptions import *
+from pydub import AudioSegment
 
 AUDIO_DIRS = [
 #DC DATA
